@@ -37,7 +37,16 @@ export default function KontaktPage() {
   }
 
   return (
-    <main className="bw-live-bg min-h-screen text-white pb-28">
+    <main
+      className="
+        min-h-screen
+        text-white
+        pb-28
+        bg-black
+        bg-[repeating-linear-gradient(45deg,rgba(255,255,255,0.015),rgba(255,255,255,0.015)_1px,transparent_1px,transparent_3px)]
+        animate-[bwMove_30s_linear_infinite]
+      "
+    >
       <section className="max-w-md mx-auto px-6 pt-10">
 
         {/* TITEL */}
@@ -94,100 +103,29 @@ export default function KontaktPage() {
           </form>
         </div>
 
-        {/* INFO SEKTION */}
+        {/* INFO */}
         <div className="space-y-4">
-
-          {/* TELEFON */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
             <p className="text-sm text-gray-400 mb-2">Telefon</p>
             <a
               href="tel:+4640184268"
-              className="flex items-center gap-3 text-lg font-medium hover:opacity-80"
+              className="flex items-center gap-3 text-lg font-medium"
             >
               <Phone size={22} />
               Ring +46 40 18 42 68
             </a>
           </div>
 
-          {/* ADRESS + MAPS */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
             <p className="text-sm text-gray-400 mb-2">Adress</p>
-
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-2">
               <MapPin size={18} />
               <span className="text-lg font-medium">
                 Sallerupsvägen 28D<br />
                 212 18 Malmö
               </span>
             </div>
-
-            <div className="flex gap-3 mt-3 flex-wrap">
-              <a
-                href="http://maps.apple.com/?q=Sallerupsvägen+28D+Malmö"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 bg-white text-black px-3 py-2 rounded-xl"
-              >
-                <img
-                  src="/icons/apple-maps.svg"
-                  alt="Apple Maps"
-                  className="w-8 h-8"
-                />
-                Apple Maps
-              </a>
-
-              <a
-                href="https://www.google.com/maps/search/?api=1&query=Sallerupsvägen+28D+Malmö"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 bg-white text-black px-3 py-2 rounded-xl"
-              >
-                <img
-                  src="/icons/google-maps.svg"
-                  alt="Google Maps"
-                  className="w-8 h-8"
-                />
-                Google Maps
-              </a>
-            </div>
           </div>
-
-          {/* ÖPPETTIDER */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
-            <p className="text-sm text-gray-400 mb-3">Öppettider</p>
-
-            <div className="space-y-2 text-lg font-medium">
-              <div className="flex justify-between">
-                <span>Måndag</span>
-                <span>13:00 – 21:00</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Tisdag</span>
-                <span>13:00 – 22:00</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Onsdag</span>
-                <span>13:00 – 22:00</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Torsdag</span>
-                <span>13:00 – 22:00</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Fredag</span>
-                <span>13:00 – 23:00</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Lördag</span>
-                <span>13:00 – 23:00</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Söndag</span>
-                <span>13:00 – 21:00</span>
-              </div>
-            </div>
-          </div>
-
         </div>
       </section>
 
