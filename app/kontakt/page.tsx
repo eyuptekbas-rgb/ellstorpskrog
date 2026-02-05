@@ -3,7 +3,7 @@
 import { useState } from "react";
 import BottomNav from "../../components/BottomNav";
 import { Phone, MapPin } from "lucide-react";
-import { libre } from "../layout";
+import { libre } from "../fonts";
 
 export default function KontaktPage() {
   const [name, setName] = useState("");
