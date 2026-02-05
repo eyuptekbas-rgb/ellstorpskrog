@@ -107,15 +107,46 @@ export default function KontaktPage() {
             </a>
           </div>
 
-          {/* ADRESS */}
+          {/* ADRESS + MAPS */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
             <p className="text-sm text-gray-400 mb-2">Adress</p>
+
             <div className="flex items-center gap-2 mb-3">
               <MapPin size={18} />
               <span className="text-lg font-medium">
                 Sallerupsvägen 28D<br />
                 212 18 Malmö
               </span>
+            </div>
+
+            <div className="flex gap-3 mt-3 flex-wrap">
+              <a
+                href="http://maps.apple.com/?q=Sallerupsvägen+28D+Malmö"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 bg-white text-black px-3 py-2 rounded-xl"
+              >
+                <img
+                  src="/icons/apple-maps.svg"
+                  alt="Apple Maps"
+                  className="w-8 h-8"
+                />
+                Apple Maps
+              </a>
+
+              <a
+                href="https://www.google.com/maps/search/?api=1&query=Sallerupsvägen+28D+Malmö"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 bg-white text-black px-3 py-2 rounded-xl"
+              >
+                <img
+                  src="/icons/google-maps.svg"
+                  alt="Google Maps"
+                  className="w-8 h-8"
+                />
+                Google Maps
+              </a>
             </div>
           </div>
 
