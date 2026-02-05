@@ -10,13 +10,11 @@ export default function KontaktPage() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    setSuccess(false);
     setError(false);
 
     try {
@@ -28,7 +26,6 @@ export default function KontaktPage() {
 
       if (!res.ok) throw new Error();
 
-      setSuccess(true);
       setName("");
       setEmail("");
       setMessage("");
@@ -55,15 +52,9 @@ export default function KontaktPage() {
         <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-lg mb-10">
           <h2 className="text-lg font-medium mb-4">Skicka meddelande</h2>
 
-          {success && (
-            <div className="mb-4 rounded-xl bg-green-900/40 border border-green-700 p-3 text-green-300">
-              Tack för ditt meddelande! Vi återkommer så snart som möjligt.
-            </div>
-          )}
-
           {error && (
             <div className="mb-4 rounded-xl bg-red-900/40 border border-red-700 p-3 text-red-300">
-              Något gick fel. Försök igen lite senare.
+              Det gick inte att skicka meddelandet just nu. Försök igen lite senare.
             </div>
           )}
 
@@ -103,6 +94,8 @@ export default function KontaktPage() {
 
         {/* INFO SEKTION */}
         <div className="space-y-4">
+
+          {/* TELEFON */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
             <p className="text-sm text-gray-400 mb-2">Telefon</p>
             <a
@@ -114,6 +107,7 @@ export default function KontaktPage() {
             </a>
           </div>
 
+          {/* ADRESS */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
             <p className="text-sm text-gray-400 mb-2">Adress</p>
             <div className="flex items-center gap-2 mb-3">
@@ -124,6 +118,43 @@ export default function KontaktPage() {
               </span>
             </div>
           </div>
+
+          {/* ÖPPETTIDER */}
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+            <p className="text-sm text-gray-400 mb-3">Öppettider</p>
+
+            <div className="space-y-2 text-lg font-medium">
+              <div className="flex justify-between">
+                <span>Måndag</span>
+                <span>13:00 – 21:00</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Tisdag</span>
+                <span>13:00 – 22:00</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Onsdag</span>
+                <span>13:00 – 22:00</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Torsdag</span>
+                <span>13:00 – 22:00</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Fredag</span>
+                <span>13:00 – 23:00</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Lördag</span>
+                <span>13:00 – 23:00</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Söndag</span>
+                <span>13:00 – 21:00</span>
+              </div>
+            </div>
+          </div>
+
         </div>
       </section>
 
