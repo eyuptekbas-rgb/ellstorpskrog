@@ -6,13 +6,16 @@ export async function POST(req: Request) {
     const { name, email, message } = await req.json();
 
     const transporter = nodemailer.createTransport({
-      host: "smtp.one.com",
-      port: 465,
-      secure: true,
+      host: "send.one.com",
+      port: 587,
+      secure: false,
       auth: {
-        user: String(process.env.SMTP_USER),
-        pass: String(process.env.SMTP_PASS),
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
       },
+      tls: {
+        rejectUnauthorized: false,
+      },  
     });
 
     await transporter.sendMail({
