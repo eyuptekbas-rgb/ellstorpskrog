@@ -41,7 +41,7 @@ export default function KontaktPage() {
       <section className="max-w-md mx-auto px-6 pt-10">
 
         {/* TITEL */}
-        <h1 className={`${libre.className} text-4xl text-center mb-2 tracking-wide`}>
+        <h1 className={`${libre.className} italic text-4xl text-center mb-2 tracking-wide`}>
           Kontakta Oss
         </h1>
         <p className="text-center text-gray-400 mb-8">
