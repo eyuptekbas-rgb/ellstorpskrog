@@ -49,20 +49,21 @@ export default function KontaktPage() {
     >
       <section className="max-w-md mx-auto px-6 pt-10">
 
+        {/* TITEL */}
         <h1 className={`${libre.className} italic text-4xl text-center mb-2 tracking-wide`}>
           Kontakta Oss
         </h1>
-
         <p className="text-center text-gray-400 mb-8">
           Har du några frågor eller funderingar? Hör av dig till oss här.
         </p>
 
+        {/* FORMULAR */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-lg mb-10">
           <h2 className="text-lg font-medium mb-4">Skicka meddelande</h2>
 
           {error && (
             <div className="mb-4 rounded-xl bg-red-900/40 border border-red-700 p-3 text-red-300">
-              Det gick inte att skicka meddelandet just nu.
+              Det gick inte att skicka meddelandet. Försök igen senare.
             </div>
           )}
 
@@ -84,7 +85,7 @@ export default function KontaktPage() {
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Ditt meddelande..."
+              placeholder="Ditt meddelande…"
               required
               className="w-full p-3 h-32 rounded-xl bg-white text-black"
             />
@@ -95,6 +96,58 @@ export default function KontaktPage() {
               {loading ? "Skickar…" : "Skicka Meddelande"}
             </button>
           </form>
+        </div>
+
+        {/* TELEFON */}
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 mb-4">
+          <p className="text-sm text-gray-400 mb-2">Telefon</p>
+          <a href="tel:+4640184268" className="flex items-center gap-3 text-lg">
+            <Phone size={22} />
+            +46 40 18 42 68
+          </a>
+        </div>
+
+        {/* ADRESS + MAPS */}
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 mb-4">
+          <p className="text-sm text-gray-400 mb-2">Adress</p>
+          <div className="flex items-start gap-2 mb-3">
+            <MapPin size={18} />
+            <span>
+              Sallerupsvägen 28D<br />
+              212 18 Malmö
+            </span>
+          </div>
+
+          <div className="flex gap-3 flex-wrap">
+            <a
+              href="http://maps.apple.com/?q=Sallerupsvägen+28D+Malmö"
+              target="_blank"
+              className="bg-white text-black px-3 py-2 rounded-xl"
+            >
+              Apple Maps
+            </a>
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=Sallerupsvägen+28D+Malmö"
+              target="_blank"
+              className="bg-white text-black px-3 py-2 rounded-xl"
+            >
+              Google Maps
+            </a>
+          </div>
+        </div>
+
+        {/* ÖPPETTIDER */}
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+          <p className="text-sm text-gray-400 mb-3">Öppettider</p>
+          <div className="space-y-2">
+            <div className="flex justify-between"><span>Måndag</span><span>13–21</span></div>
+            <div className="flex justify-between"><span>Tisdag</span><span>13–22</span></div>
+            <div className="flex justify-between"><span>Onsdag</span><span>13–22</span></div>
+            <div className="flex justify-between"><span>Torsdag</span><span>13–22</span></div>
+            <div className="flex justify-between"><span>Fredag</span><span>13–23</span></div>
+            <div className="flex justify-between"><span>Lördag</span><span>13–23</span></div>
+            <div className="flex justify-between"><span>Söndag</span><span>13–21</span></div>
+          </div>
         </div>
       </section>
 
