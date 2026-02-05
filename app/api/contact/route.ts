@@ -1,36 +1,37 @@
-import { NextResponse } from "next/server";
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: Request) {
   try {
-    const { name, email, message } = await req.json();
+    const body = await req.json();
+    const { name, email, message } = body;
 
-    const transporter = nodemailer.createTransport({
-      host: "send.one.com",
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.SMTP_USER, // info@ellstorpskrog.se
-        pass: process.env.SMTP_PASS, // mailbox-adgangskode
-      },
-    });
+    if (!name || !email || !message) {
+      return new Response(
+        JSON.stringify({ error: "Missing fields" }),
+        { status: 400 }
+      );
+    }
 
-    await transporter.sendMail({
-      from: `"Ellstorps Krog" <info@ellstorpskrog.se>`,
-      to: "info@ellstorpskrog.se",
+    await resend.emails.send({
+      from: "Ellstorps Krog <no-reply@ellstorpskrog.se>",
+      to: [process.env.CONTACT_TO_EMAIL!],
       replyTo: email,
       subject: "Ny besked fra kontaktformular",
-      text: `Navn: ${name}
-Email: ${email}
-
-${message}`,
+      html: `
+        <p><strong>Navn:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Besked:</strong></p>
+        <p>${message.replace(/\n/g, "<br/>")}</p>
+      `,
     });
 
-    return NextResponse.json({ success: true });
-  } catch (error: any) {
-    console.error("MAIL ERROR FULL:", error?.message, error);
-    return NextResponse.json(
-      { error: error?.message || "Kunne ikke sende mail" },
+    return new Response(JSON.stringify({ success: true }), { status: 200 });
+  } catch (error) {
+    console.error(error);
+    return new Response(
+      JSON.stringify({ error: "Failed to send email" }),
       { status: 500 }
     );
   }
