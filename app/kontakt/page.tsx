@@ -37,11 +37,13 @@ export default function KontaktPage() {
   }
 
   return (
-    <main className="min-h-screen text-white pb-28 bg-gradient-to-b from-black via-zinc-950 to-black">
+    <main className="bw-live-bg min-h-screen text-white pb-28">
       <section className="max-w-md mx-auto px-6 pt-10">
 
         {/* TITEL */}
-        <h1 className={`${libre.className} italic text-4xl text-center mb-2 tracking-wide`}>
+        <h1
+          className={`${libre.className} italic text-4xl text-center mb-2 tracking-wide`}
+        >
           Kontakta Oss
         </h1>
         <p className="text-center text-gray-400 mb-8">
