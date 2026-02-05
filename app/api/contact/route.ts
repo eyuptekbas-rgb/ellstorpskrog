@@ -10,12 +10,9 @@ export async function POST(req: Request) {
       port: 587,
       secure: false,
       auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
+        user: process.env.SMTP_USER, // info@ellstorpskrog.se
+        pass: process.env.SMTP_PASS, // mailbox-adgangskode
       },
-      tls: {
-        rejectUnauthorized: false,
-      },  
     });
 
     await transporter.sendMail({
@@ -30,10 +27,10 @@ ${message}`,
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("MAIL ERROR:", error);
+  } catch (error: any) {
+    console.error("MAIL ERROR FULL:", error?.message, error);
     return NextResponse.json(
-      { error: "Kunne ikke sende mail" },
+      { error: error?.message || "Kunne ikke sende mail" },
       { status: 500 }
     );
   }
