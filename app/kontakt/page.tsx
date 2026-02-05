@@ -49,83 +49,52 @@ export default function KontaktPage() {
     >
       <section className="max-w-md mx-auto px-6 pt-10">
 
-        {/* TITEL */}
-        <h1
-          className={`${libre.className} italic text-4xl text-center mb-2 tracking-wide`}
-        >
+        <h1 className={`${libre.className} italic text-4xl text-center mb-2 tracking-wide`}>
           Kontakta Oss
         </h1>
+
         <p className="text-center text-gray-400 mb-8">
           Har du några frågor eller funderingar? Hör av dig till oss här.
         </p>
 
-        {/* FORMULÄR */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-lg mb-10">
           <h2 className="text-lg font-medium mb-4">Skicka meddelande</h2>
 
           {error && (
             <div className="mb-4 rounded-xl bg-red-900/40 border border-red-700 p-3 text-red-300">
-              Det gick inte att skicka meddelandet just nu. Försök igen lite senare.
+              Det gick inte att skicka meddelandet just nu.
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <input
-              type="text"
-              placeholder="Namn"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              placeholder="Namn"
               required
-              className="w-full p-3 rounded-xl bg-white text-black outline-none"
+              className="w-full p-3 rounded-xl bg-white text-black"
             />
             <input
-              type="email"
-              placeholder="E-post"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              placeholder="E-post"
               required
-              className="w-full p-3 rounded-xl bg-white text-black outline-none"
+              className="w-full p-3 rounded-xl bg-white text-black"
             />
             <textarea
-              placeholder="Ditt meddelande..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
+              placeholder="Ditt meddelande..."
               required
-              className="w-full p-3 rounded-xl bg-white text-black outline-none h-32"
+              className="w-full p-3 h-32 rounded-xl bg-white text-black"
             />
             <button
-              type="submit"
               disabled={loading}
-              className="w-full bg-white text-black p-3 rounded-xl font-semibold hover:bg-gray-200 transition disabled:opacity-50"
+              className="w-full bg-white text-black p-3 rounded-xl font-semibold"
             >
               {loading ? "Skickar…" : "Skicka Meddelande"}
             </button>
           </form>
-        </div>
-
-        {/* INFO */}
-        <div className="space-y-4">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
-            <p className="text-sm text-gray-400 mb-2">Telefon</p>
-            <a
-              href="tel:+4640184268"
-              className="flex items-center gap-3 text-lg font-medium"
-            >
-              <Phone size={22} />
-              Ring +46 40 18 42 68
-            </a>
-          </div>
-
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
-            <p className="text-sm text-gray-400 mb-2">Adress</p>
-            <div className="flex items-center gap-2">
-              <MapPin size={18} />
-              <span className="text-lg font-medium">
-                Sallerupsvägen 28D<br />
-                212 18 Malmö
-              </span>
-            </div>
-          </div>
         </div>
       </section>
 
