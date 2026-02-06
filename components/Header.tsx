@@ -25,7 +25,7 @@ export default function Header() {
           </Link>
 
           {/* STATUS */}
-          <div className="hidden sm:flex items-center gap-1 text-xs text-white/90">
+          <div className="flex items-center gap-1 text-[11px] text-white/90">
             <span className="w-2 h-2 bg-green-500 rounded-full"></span>
             <span>Öppet – stänger 22:30</span>
           </div>
