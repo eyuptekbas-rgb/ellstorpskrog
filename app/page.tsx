@@ -5,7 +5,7 @@ export default function Home() {
     <main className="bg-black text-white">
 
       {/* HERO SECTION */}
-      <section className="relative w-full h-[75vh] overflow-hidden">
+      <section className="relative w-full h-[55vh] mt-14 overflow-hidden">
 
         {/* IMAGE */}
         <img
