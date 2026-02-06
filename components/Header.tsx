@@ -7,7 +7,7 @@ import { Phone, MapPin, ShoppingCart } from "lucide-react";
 export default function Header() {
   return (
     <header className="fixed top-0 left-0 w-full z-50 backdrop-blur-sm bg-black/85 border-b border-white/10">
-      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
 
         {/* LEFT SIDE */}
         <div className="flex items-center gap-3">
@@ -19,22 +19,23 @@ export default function Header() {
               alt="Ellstorps Krog"
               width={140 }
               height={50}
-              className="h-18 w-auto object-contain"
+              className="h-15 w-auto object-contain"
               priority
             />
           </Link>
 
           {/* STATUS */}
-          <div className="hidden sm:flex items-center gap-2 text-xs text-white/90">
+          <div className="hidden sm:flex items-center gap-1 text-xs text-white/90">
             <span className="w-2 h-2 bg-green-500 rounded-full"></span>
             <span>Öppet – stänger 22:30</span>
           </div>
         </div>
 
         {/* RIGHT SIDE */}
-        <div className="flex items-center gap-4 text-white">
+        <div className="flex items-center gap-2 text-white">
 
           {/* LANGUAGE */}
+          {/*
           <div className="flex items-center gap-1">
             <button>
               <Image src="/flags/se.png" alt="Swedish" width={60} height={40} />
@@ -43,6 +44,7 @@ export default function Header() {
               <Image src="/flags/gb.png" alt="English" width={100} height={22} />
             </button>
           </div>
+          */}
 
           {/* MAPS */}
           <a
