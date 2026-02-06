@@ -1,4 +1,5 @@
 import BottomNav from "../components/BottomNav";
+import Footer from "../components/Footer";
 
 export default function Home() {
   return (
@@ -32,6 +33,9 @@ export default function Home() {
           
         </p>
       </section>
+
+      {/* FOOTER */}
+      <Footer />
 
       {/* BOTTOM NAV */}
       <BottomNav />
