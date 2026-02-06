@@ -3,10 +3,48 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Phone, MapPin, ShoppingCart } from "lucide-react";
+import { openingHours } from "@/lib/openingHours";
 
 export default function Header() {
+
+  function getStatus() {
+    const now = new Date();
+    const day = now.getDay(); // 0 = Sunday
+    const hour = now.getHours();
+    const minute = now.getMinutes();
+
+    const days = [
+      "sunday",
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday"
+    ] as const;
+
+    const today = openingHours[days[day]];
+    if (!today) return "Stängt";
+
+    const [openH, openM] = today.open.split(":").map(Number);
+    const [closeH, closeM] = today.close.split(":").map(Number);
+
+    const nowMinutes = hour * 60 + minute;
+    const openMinutes = openH * 60 + openM;
+    const closeMinutes = closeH * 60 + closeM;
+
+    if (nowMinutes >= openMinutes && nowMinutes < closeMinutes) {
+      return `Öppet – stänger ${today.close}`;
+    }
+
+    return `Stängt – öppnar ${today.open}`;
+  }
+
+  const statusText = getStatus();
+  const isOpen = statusText.startsWith("Öppet");
+
   return (
-    <header className="fixed top-0 left-0 w-full z-50 backdrop-blur-sm bg-black/85 border-b border-white/10">
+    <header className="fixed top-0 left-0 w-full z-50 backdrop-blur-md bg-black/40 border-b border-white/10">
       <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
 
         {/* LEFT SIDE */}
@@ -15,36 +53,29 @@ export default function Header() {
           {/* LOGO */}
           <Link href="/">
             <Image
-              src="/logo.png"   // læg logo i public/logo.png
+              src="/logo.png"
               alt="Ellstorps Krog"
-              width={140 }
+              width={140}
               height={50}
-              className="h-15 w-auto object-contain"
+              className="h-9 w-auto object-contain"
               priority
             />
           </Link>
 
           {/* STATUS */}
           <div className="flex items-center gap-1 text-[11px] text-white/90">
-            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-            <span>Öppet – stänger 22:30</span>
+            <span
+              className={`w-2 h-2 rounded-full ${
+                isOpen ? "bg-green-500" : "bg-red-500"
+              }`}
+            ></span>
+            <span>{statusText}</span>
           </div>
+
         </div>
 
         {/* RIGHT SIDE */}
         <div className="flex items-center gap-2 text-white">
-
-          {/* LANGUAGE */}
-          {/*
-          <div className="flex items-center gap-1">
-            <button>
-              <Image src="/flags/se.png" alt="Swedish" width={60} height={40} />
-            </button>
-            <button>
-              <Image src="/flags/gb.png" alt="English" width={100} height={22} />
-            </button>
-          </div>
-          */}
 
           {/* MAPS */}
           <a
