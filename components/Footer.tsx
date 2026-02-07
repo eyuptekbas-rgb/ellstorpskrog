@@ -121,7 +121,7 @@ export default function Footer() {
               </div>
 
               <div className="bg-white rounded-md px-3 py-2 shadow-md">
-                <Image src="/payments/swish.png" alt="Swish" width={54} height={36} />
+                <Image src="/payments/swish.png" alt="Swish" width={50} height={38} />
               </div>
 
             </div>
