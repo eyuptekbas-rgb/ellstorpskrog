@@ -38,7 +38,6 @@ export default function Footer() {
               212 18 Malmö
             </p>
 
-            {/* MAP LINKS */}
             <div className="flex gap-4 mt-3 text-white/70 text-xs">
               <a
                 href="https://maps.google.com/?q=Sallerupsvägen+28+Malmö"
@@ -107,11 +106,24 @@ export default function Footer() {
           <div>
             <p className="font-semibold mb-2">Betalingsmetoder</p>
 
-            <div className="flex gap-3 items-center opacity-80 flex-wrap">
-              <Image src="/payments/visa.png" alt="Visa" width={38} height={24} />
-              <Image src="/payments/mastercard.png" alt="Mastercard" width={38} height={24} />
-              <Image src="/payments/applepay.png" alt="Apple Pay" width={38} height={24} />
-              <Image src="/payments/swish.png" alt="Swish" width={38} height={24} />
+            <div className="flex gap-4 items-center flex-wrap mt-2">
+
+              <div className="bg-white rounded-md px-3 py-2 shadow-md">
+                <Image src="/payments/visa.png" alt="Visa" width={34} height={22} />
+              </div>
+
+              <div className="bg-white rounded-md px-3 py-2 shadow-md">
+                <Image src="/payments/mastercard.png" alt="Mastercard" width={34} height={22} />
+              </div>
+
+              <div className="bg-white rounded-md px-3 py-2 shadow-md">
+                <Image src="/payments/applepay.png" alt="Apple Pay" width={34} height={22} />
+              </div>
+
+              <div className="bg-white rounded-md px-3 py-2 shadow-md">
+                <Image src="/payments/swish.png" alt="Swish" width={54} height={36} />
+              </div>
+
             </div>
 
           </div>
