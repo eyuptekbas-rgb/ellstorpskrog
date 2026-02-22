@@ -19,7 +19,26 @@ const montserrat = Montserrat({
 
 export const metadata: Metadata = {
   title: "Ellstorps Krog",
-  description: "Restaurant Online Beställning",
+  description: "Restaurant i Malmö – Beställ online, boka bord eller hemkörning.",
+
+  icons: {
+    icon: "/favicon.ico",
+  },
+
+  openGraph: {
+    title: "Ellstorps Krog",
+    description: "Klassisk mat i hjärtat av Malmö. Beställ online eller boka bord.",
+    images: ["/hero.jpg"],
+    locale: "sv_SE",
+    type: "website",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Ellstorps Krog",
+    description: "Beställ mat online eller boka bord.",
+    images: ["/hero.jpg"],
+  },
 };
 
 export default function RootLayout({

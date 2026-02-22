@@ -9,13 +9,36 @@ export default function Home() {
   const [showDelivery, setShowDelivery] = useState(false);
   const [loadingDelivery, setLoadingDelivery] = useState(false);
   const [showTop, setShowTop] = useState(false);
+  const [showNews, setShowNews] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
 
-  // show "to top" button
+  useEffect(() => {
+    const hour = new Date().getHours();
+    setIsOpen(hour >= 11 && hour <= 22);
+  }, []);
+
   useEffect(() => {
     const onScroll = () => setShowTop(window.scrollY > 300);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    const seen = localStorage.getItem("newsSeen");
+    if (!seen) setShowNews(true);
+  }, []);
+
+  useEffect(() => {
+    if (showNews) {
+      const timer = setTimeout(() => closeNews(), 7000);
+      return () => clearTimeout(timer);
+    }
+  }, [showNews]);
+
+  const closeNews = () => {
+    setShowNews(false);
+    localStorage.setItem("newsSeen", "true");
+  };
 
   const openDelivery = () => {
     setLoadingDelivery(true);
@@ -25,46 +48,57 @@ export default function Home() {
     }, 500);
   };
 
-  const scrollDown = () => {
-    window.scrollTo({ top: 400, behavior: "smooth" });
-  };
-
-  const scrollTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  const scrollDown = () => window.scrollTo({ top: 500, behavior: "smooth" });
+  const scrollTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
   return (
     <main className="bg-black text-white min-h-screen">
 
       {/* HERO */}
-      <section className="relative w-full h-[260px] overflow-hidden">
-        <img
+      <section className="relative w-full h-[320px] overflow-hidden">
+        <Image
           src="/hero.jpg"
           alt="Ellstorps Krog"
-          className="w-full h-full object-cover brightness-105"
+          fill
+          priority
+          className="object-cover brightness-95"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
 
-        <div className="absolute inset-0 flex items-center justify-center">
-          <h1 className="text-white text-xl text-center px-4 drop-shadow-lg">
+        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/50 to-black/90"></div>
+
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 animate-fadeIn">
+          <h1 className="text-3xl md:text-4xl font-semibold tracking-wide">
             Välkommen till Ellstorps Krog
           </h1>
+
+          <p className="text-white/70 text-sm mt-3">
+            Klassisk husmanskost i hjärtat av Malmö
+          </p>
+
+          <p className={`mt-3 text-sm font-semibold ${isOpen ? "text-green-400" : "text-red-400"}`}>
+            {isOpen ? "🟢 Öppet nu" : "🔴 Stängt"}
+          </p>
         </div>
 
-        {/* SCROLL PIL */}
-        <button
-          onClick={scrollDown}
-          className="absolute bottom-3 w-full text-center text-white/70 animate-bounce"
-        >
+        <button onClick={scrollDown} className="absolute bottom-5 w-full text-center animate-bounce text-white/60">
           ↓
         </button>
       </section>
 
-      <div className="h-px bg-white/10 mx-6"></div>
+      {/* MENU PDF */}
+      <section className="px-6 py-8 text-center">
+        <a
+          href="/menu.pdf"
+          target="_blank"
+          className="inline-block bg-white text-black px-6 py-3 rounded-2xl font-semibold transition hover:opacity-90 active:scale-95"
+        >
+          📄 Se Meny (PDF)
+        </a>
+      </section>
 
       {/* INFO BOXES */}
-      <section className="px-4 py-8 space-y-4">
-        <h2 className="text-center text-3xl tracking-wide mb-4">
+      <section className="px-6 py-12 space-y-6">
+        <h2 className="text-center text-3xl tracking-wide">
           VI HAR FULLSTÄNDIGA RÄTTIGHETER
         </h2>
 
@@ -74,63 +108,57 @@ export default function Home() {
           ["🎓", "10% Studentrabatt", "Gäller i restaurangen"],
           ["📅", "Boka bord", "Reservera snabbt och enkelt"],
         ].map(([icon, title, text], i) => (
-          <div key={i} className="border border-white/30 rounded-xl p-4 flex gap-3 shadow-md shadow-black/40 transition hover:scale-[1.02] active:scale-95">
+          <div
+            key={i}
+            className="border border-white/10 bg-white/5 rounded-2xl p-6 flex gap-4 transition duration-300 hover:bg-white/10 hover:shadow-[0_0_25px_rgba(255,255,255,0.05)] active:scale-95"
+          >
             <span className="text-2xl w-8 text-center">{icon}</span>
             <div>
-              <p className="font-semibold">{title}</p>
-              <p className="text-sm text-white/60">{text}</p>
+              <p className="font-semibold text-lg">{title}</p>
+              <p className="text-sm text-white/60 mt-1">{text}</p>
             </div>
           </div>
         ))}
       </section>
 
-      <div className="h-px bg-white/10 mx-6"></div>
-
       {/* BESTÄLL ONLINE */}
-      <section className="px-6 pb-10 text-center">
-        <h4 className="text-xl mb-4 flex items-center justify-center gap-2">
-          🍽️ BESTÄLL ONLINE
+      <section className="px-6 pb-16 text-center">
+        <h4 className="text-2xl mb-6 tracking-wide">
+          BESTÄLL ONLINE
         </h4>
 
-        <div className="space-y-3">
-          <button className="w-full bg-white text-black py-3 rounded-xl font-semibold transition hover:opacity-90 active:scale-95">
+        <div className="space-y-4">
+          <button className="w-full bg-white text-black py-4 rounded-2xl font-semibold transition hover:opacity-90 active:scale-95">
             🥡 Ta med
           </button>
 
           <a
-            href="tel:+46123456789"
-            className="block w-full bg-white text-black py-3 rounded-xl font-semibold transition hover:opacity-90 active:scale-95"
+            href="tel:+4640184268"
+            className="block w-full bg-white text-black py-4 rounded-2xl font-semibold transition hover:opacity-90 active:scale-95"
           >
             📞 Ring nu
           </a>
 
           <button
             onClick={openDelivery}
-            className="w-full bg-white text-black py-3 rounded-xl font-semibold transition hover:opacity-90 active:scale-95"
+            className="w-full bg-white text-black py-4 rounded-2xl font-semibold transition hover:opacity-90 active:scale-95"
           >
             🚚 Hemkörning
           </button>
         </div>
       </section>
 
-      {/* LOADER */}
-      {loadingDelivery && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 text-white">
-          Öppnar leverans...
-        </div>
-      )}
-
-      {/* POPUP */}
+      {/* DELIVERY POPUP */}
       {showDelivery && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-          <div className="bg-white text-black rounded-xl p-6 w-[90%] max-w-sm text-center space-y-4 shadow-2xl">
-            <h3 className="text-xl font-semibold">Välj leverans</h3>
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm">
+          <div className="bg-white/95 backdrop-blur rounded-2xl p-8 w-[90%] max-w-sm text-center space-y-5 shadow-2xl">
+            <h3 className="text-xl font-semibold text-black">Välj leverans</h3>
 
-            <a href="https://wolt.com" target="_blank" className="block bg-black text-white py-3 rounded-xl">
+            <a href="https://wolt.com" target="_blank" className="block bg-black text-white py-3 rounded-2xl">
               Wolt
             </a>
 
-            <a href="https://foodora.se" target="_blank" className="block bg-black text-white py-3 rounded-xl">
+            <a href="https://foodora.se" target="_blank" className="block bg-black text-white py-3 rounded-2xl">
               Foodora
             </a>
 
@@ -141,10 +169,30 @@ export default function Home() {
         </div>
       )}
 
-      {/* STICKY CALL BUTTON */}
+      {/* NEWS POPUP */}
+      {showNews && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm">
+          <div className="bg-white/95 backdrop-blur rounded-2xl p-8 w-[90%] max-w-sm text-center space-y-5 shadow-2xl">
+            <h3 className="text-xl font-semibold text-black">Information</h3>
+            <p className="text-sm text-black">
+              Her skriver du din egen nyhed.
+            </p>
+            <button onClick={closeNews} className="bg-black text-white px-4 py-2 rounded-xl">
+              Stäng
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* COOKIE TEXT */}
+      <p className="text-center text-xs text-white/40 py-4">
+        Integritet & Cookies
+      </p>
+
+      {/* STICKY CALL */}
       <a
-        href="tel:+46123456789"
-        className="fixed bottom-24 right-4 bg-white text-black w-14 h-14 rounded-full flex items-center justify-center shadow-xl"
+        href="tel:+4640184268"
+        className="fixed bottom-24 right-4 bg-white text-black w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition hover:scale-110"
       >
         📞
       </a>
@@ -153,14 +201,14 @@ export default function Home() {
       {showTop && (
         <button
           onClick={scrollTop}
-          className="fixed bottom-40 right-4 bg-white text-black w-12 h-12 rounded-full shadow-xl"
+          className="fixed bottom-40 right-4 bg-white text-black w-12 h-12 rounded-full shadow-xl transition hover:scale-110"
         >
           ↑
         </button>
       )}
 
-      <p className="text-xs text-white/40 text-center pb-2">
-        © Ellstorps Krog – Malmö
+      <p className="text-xs text-white/40 text-center pb-6">
+        © {new Date().getFullYear()} Ellstorps Krog – Malmö
       </p>
 
       <Footer />
