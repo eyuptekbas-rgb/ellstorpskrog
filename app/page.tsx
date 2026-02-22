@@ -55,7 +55,7 @@ export default function Home() {
     <main className="bg-gradient-to-b from-[#0f0f0f] via-[#111111] to-[#141414] text-white min-h-screen">
 
       {/* HERO */}
-      <section className="relative w-full h-[320px] overflow-hidden">
+      <section className="relative w-full h-[420px] overflow-hidden">
         <Image
           src="/hero.jpg"
           alt="Ellstorps Krog"
@@ -66,8 +66,8 @@ export default function Home() {
 
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/80"></div>
 
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 animate-fadeIn">
-          <h1 className="text-3xl md:text-5xl font-serif tracking-wide">
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+          <h1 className="text-4xl font-serif tracking-wide">
             Välkommen till Ellstorps Krog
           </h1>
 
@@ -77,30 +77,49 @@ export default function Home() {
             Klassisk husmanskost i hjärtat av Malmö
           </p>
 
-          <p className={`mt-3 text-sm font-semibold ${isOpen ? "text-[#b85c38]" : "text-red-400"}`}>
+          <p className={`mt-4 text-sm font-semibold ${isOpen ? "text-[#b85c38]" : "text-red-400"}`}>
             {isOpen ? "🟢 Öppet nu" : "🔴 Stängt"}
           </p>
         </div>
 
-        <button onClick={scrollDown} className="absolute bottom-5 w-full text-center animate-bounce text-white/60">
+        <button
+          onClick={scrollDown}
+          className="absolute bottom-6 w-full text-center animate-bounce text-white/60"
+        >
           ↓
         </button>
       </section>
 
-      {/* MENU PDF */}
-      <section className="px-6 py-10 text-center">
-        <a
-          href="/menu.pdf"
-          target="_blank"
-          className="inline-block bg-[#b85c38] text-white px-8 py-4 rounded-2xl font-semibold transition duration-300 hover:bg-[#9e4e2f] hover:shadow-lg active:scale-95"
-        >
-          📄 Se Meny (PDF)
-        </a>
+      {/* BESTÄLL ONLINE – PRIORITET PÅ MOBIL */}
+      <section className="px-6 py-16 text-center">
+        <h2 className="text-2xl font-serif mb-8 tracking-wide">
+          Beställ Online
+        </h2>
+
+        <div className="space-y-5">
+          <button className="w-full bg-[#b85c38] text-white py-5 text-lg rounded-2xl font-semibold transition duration-300 hover:bg-[#9e4e2f] hover:shadow-lg active:scale-95">
+            🥡 Ta med
+          </button>
+
+          <a
+            href="tel:+4640184268"
+            className="block w-full bg-[#b85c38] text-white py-5 text-lg rounded-2xl font-semibold transition duration-300 hover:bg-[#9e4e2f] hover:shadow-lg active:scale-95"
+          >
+            📞 Ring nu
+          </a>
+
+          <button
+            onClick={openDelivery}
+            className="w-full bg-[#b85c38] text-white py-5 text-lg rounded-2xl font-semibold transition duration-300 hover:bg-[#9e4e2f] hover:shadow-lg active:scale-95"
+          >
+            🚚 Hemkörning
+          </button>
+        </div>
       </section>
 
-      {/* INFO BOXES */}
-      <section className="px-6 py-12 space-y-6">
-        <h2 className="text-center text-3xl tracking-wide">
+      {/* INFO */}
+      <section className="px-6 py-16 space-y-6">
+        <h2 className="text-center text-3xl font-serif tracking-wide">
           VI HAR FULLSTÄNDIGA RÄTTIGHETER
         </h2>
 
@@ -112,7 +131,7 @@ export default function Home() {
         ].map(([icon, title, text], i) => (
           <div
             key={i}
-            className="bg-[#1a1a1a] border border-[#b85c38]/30 rounded-2xl p-6 flex gap-4 transition duration-300 hover:bg-[#b85c38]/10 hover:shadow-[0_0_30px_rgba(184,92,56,0.25)] active:scale-95"
+            className="bg-[#1a1a1a] border border-[#b85c38]/30 rounded-2xl p-7 flex gap-4 transition duration-300 hover:bg-[#b85c38]/10 hover:shadow-[0_0_30px_rgba(184,92,56,0.25)] active:scale-95"
           >
             <span className="text-2xl w-8 text-center">{icon}</span>
             <div>
@@ -123,31 +142,15 @@ export default function Home() {
         ))}
       </section>
 
-      {/* BESTÄLL ONLINE */}
-      <section className="px-6 pb-16 text-center">
-        <h4 className="text-2xl mb-6 tracking-wide">
-          BESTÄLL ONLINE
-        </h4>
-
-        <div className="space-y-4">
-          <button className="w-full bg-[#b85c38] text-white py-4 rounded-2xl font-semibold transition duration-300 hover:bg-[#9e4e2f] hover:shadow-lg active:scale-95">
-            🥡 Ta med
-          </button>
-
-          <a
-            href="tel:+4640184268"
-            className="block w-full bg-[#b85c38] text-white py-4 rounded-2xl font-semibold transition duration-300 hover:bg-[#9e4e2f] hover:shadow-lg active:scale-95"
-          >
-            📞 Ring nu
-          </a>
-
-          <button
-            onClick={openDelivery}
-            className="w-full bg-[#b85c38] text-white py-4 rounded-2xl font-semibold transition duration-300 hover:bg-[#9e4e2f] hover:shadow-lg active:scale-95"
-          >
-            🚚 Hemkörning
-          </button>
-        </div>
+      {/* MENU PDF */}
+      <section className="px-6 py-16 text-center">
+        <a
+          href="/menu.pdf"
+          target="_blank"
+          className="inline-block bg-[#b85c38] text-white px-8 py-5 text-lg rounded-2xl font-semibold transition duration-300 hover:bg-[#9e4e2f] hover:shadow-lg active:scale-95"
+        >
+          📄 Se Meny (PDF)
+        </a>
       </section>
 
       {/* DELIVERY POPUP */}
@@ -156,11 +159,11 @@ export default function Home() {
           <div className="bg-[#1a1a1a] rounded-2xl p-8 w-[90%] max-w-sm text-center space-y-5 shadow-2xl border border-[#b85c38]/40">
             <h3 className="text-xl font-semibold text-white">Välj leverans</h3>
 
-            <a href="https://wolt.com" target="_blank" className="block bg-[#b85c38] text-white py-3 rounded-2xl">
+            <a href="https://wolt.com" target="_blank" className="block bg-[#b85c38] text-white py-4 rounded-2xl">
               Wolt
             </a>
 
-            <a href="https://foodora.se" target="_blank" className="block bg-[#b85c38] text-white py-3 rounded-2xl">
+            <a href="https://foodora.se" target="_blank" className="block bg-[#b85c38] text-white py-4 rounded-2xl">
               Foodora
             </a>
 
@@ -179,22 +182,17 @@ export default function Home() {
             <p className="text-sm text-white/70">
               Her skriver du din egen nyhed.
             </p>
-            <button onClick={closeNews} className="bg-[#b85c38] text-white px-4 py-2 rounded-xl">
+            <button onClick={closeNews} className="bg-[#b85c38] text-white px-4 py-3 rounded-xl">
               Stäng
             </button>
           </div>
         </div>
       )}
 
-      {/* COOKIE TEXT */}
-      <p className="text-center text-xs text-white/40 py-4">
-        Integritet & Cookies
-      </p>
-
       {/* STICKY CALL */}
       <a
         href="tel:+4640184268"
-        className="fixed bottom-24 right-4 bg-[#b85c38] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(184,92,56,0.4)] transition hover:scale-110"
+        className="fixed bottom-28 right-4 bg-[#b85c38] text-white w-16 h-16 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(184,92,56,0.4)] transition hover:scale-110"
       >
         📞
       </a>
@@ -203,13 +201,13 @@ export default function Home() {
       {showTop && (
         <button
           onClick={scrollTop}
-          className="fixed bottom-40 right-4 bg-[#b85c38] text-white w-12 h-12 rounded-full shadow-[0_0_20px_rgba(184,92,56,0.4)] transition hover:scale-110"
+          className="fixed bottom-44 right-4 bg-[#b85c38] text-white w-14 h-14 rounded-full shadow-[0_0_20px_rgba(184,92,56,0.4)] transition hover:scale-110"
         >
           ↑
         </button>
       )}
 
-      <p className="text-xs text-white/40 text-center pb-6">
+      <p className="text-xs text-white/40 text-center py-8">
         © {new Date().getFullYear()} Ellstorps Krog – Malmö
       </p>
 
