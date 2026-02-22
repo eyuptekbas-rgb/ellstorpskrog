@@ -52,7 +52,7 @@ export default function Home() {
   const scrollTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
   return (
-    <main className="bg-black text-white min-h-screen">
+    <main className="bg-[#0f0f0f] text-white min-h-screen">
 
       {/* HERO */}
       <section className="relative w-full h-[320px] overflow-hidden">
@@ -71,11 +71,13 @@ export default function Home() {
             Välkommen till Ellstorps Krog
           </h1>
 
-          <p className="text-white/70 text-sm mt-3">
+          <div className="w-20 h-1 bg-[#b85c38] rounded-full mt-4 mb-3"></div>
+
+          <p className="text-white/70 text-sm">
             Klassisk husmanskost i hjärtat av Malmö
           </p>
 
-          <p className={`mt-3 text-sm font-semibold ${isOpen ? "text-green-400" : "text-red-400"}`}>
+          <p className={`mt-3 text-sm font-semibold ${isOpen ? "text-[#b85c38]" : "text-red-400"}`}>
             {isOpen ? "🟢 Öppet nu" : "🔴 Stängt"}
           </p>
         </div>
@@ -90,7 +92,7 @@ export default function Home() {
         <a
           href="/menu.pdf"
           target="_blank"
-          className="inline-block bg-white text-black px-6 py-3 rounded-2xl font-semibold transition hover:opacity-90 active:scale-95"
+          className="inline-block bg-[#b85c38] text-white px-6 py-3 rounded-2xl font-semibold transition hover:bg-[#9e4e2f] active:scale-95"
         >
           📄 Se Meny (PDF)
         </a>
@@ -110,7 +112,7 @@ export default function Home() {
         ].map(([icon, title, text], i) => (
           <div
             key={i}
-            className="border border-white/10 bg-white/5 rounded-2xl p-6 flex gap-4 transition duration-300 hover:bg-white/10 hover:shadow-[0_0_25px_rgba(255,255,255,0.05)] active:scale-95"
+            className="border border-[#b85c38]/40 bg-white/5 rounded-2xl p-6 flex gap-4 transition duration-300 hover:bg-[#b85c38]/10 hover:shadow-[0_0_25px_rgba(184,92,56,0.25)] active:scale-95"
           >
             <span className="text-2xl w-8 text-center">{icon}</span>
             <div>
@@ -128,20 +130,20 @@ export default function Home() {
         </h4>
 
         <div className="space-y-4">
-          <button className="w-full bg-white text-black py-4 rounded-2xl font-semibold transition hover:opacity-90 active:scale-95">
+          <button className="w-full bg-[#b85c38] text-white py-4 rounded-2xl font-semibold transition hover:bg-[#9e4e2f] active:scale-95">
             🥡 Ta med
           </button>
 
           <a
             href="tel:+4640184268"
-            className="block w-full bg-white text-black py-4 rounded-2xl font-semibold transition hover:opacity-90 active:scale-95"
+            className="block w-full bg-[#b85c38] text-white py-4 rounded-2xl font-semibold transition hover:bg-[#9e4e2f] active:scale-95"
           >
             📞 Ring nu
           </a>
 
           <button
             onClick={openDelivery}
-            className="w-full bg-white text-black py-4 rounded-2xl font-semibold transition hover:opacity-90 active:scale-95"
+            className="w-full bg-[#b85c38] text-white py-4 rounded-2xl font-semibold transition hover:bg-[#9e4e2f] active:scale-95"
           >
             🚚 Hemkörning
           </button>
@@ -151,18 +153,18 @@ export default function Home() {
       {/* DELIVERY POPUP */}
       {showDelivery && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm">
-          <div className="bg-white/95 backdrop-blur rounded-2xl p-8 w-[90%] max-w-sm text-center space-y-5 shadow-2xl">
-            <h3 className="text-xl font-semibold text-black">Välj leverans</h3>
+          <div className="bg-[#1a1a1a] rounded-2xl p-8 w-[90%] max-w-sm text-center space-y-5 shadow-2xl border border-[#b85c38]/40">
+            <h3 className="text-xl font-semibold text-white">Välj leverans</h3>
 
-            <a href="https://wolt.com" target="_blank" className="block bg-black text-white py-3 rounded-2xl">
+            <a href="https://wolt.com" target="_blank" className="block bg-[#b85c38] text-white py-3 rounded-2xl">
               Wolt
             </a>
 
-            <a href="https://foodora.se" target="_blank" className="block bg-black text-white py-3 rounded-2xl">
+            <a href="https://foodora.se" target="_blank" className="block bg-[#b85c38] text-white py-3 rounded-2xl">
               Foodora
             </a>
 
-            <button onClick={() => setShowDelivery(false)} className="text-sm text-gray-500">
+            <button onClick={() => setShowDelivery(false)} className="text-sm text-white/50">
               Stäng
             </button>
           </div>
@@ -172,12 +174,12 @@ export default function Home() {
       {/* NEWS POPUP */}
       {showNews && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm">
-          <div className="bg-white/95 backdrop-blur rounded-2xl p-8 w-[90%] max-w-sm text-center space-y-5 shadow-2xl">
-            <h3 className="text-xl font-semibold text-black">Information</h3>
-            <p className="text-sm text-black">
+          <div className="bg-[#1a1a1a] rounded-2xl p-8 w-[90%] max-w-sm text-center space-y-5 shadow-2xl border border-[#b85c38]/40">
+            <h3 className="text-xl font-semibold text-white">Information</h3>
+            <p className="text-sm text-white/70">
               Her skriver du din egen nyhed.
             </p>
-            <button onClick={closeNews} className="bg-black text-white px-4 py-2 rounded-xl">
+            <button onClick={closeNews} className="bg-[#b85c38] text-white px-4 py-2 rounded-xl">
               Stäng
             </button>
           </div>
@@ -192,7 +194,7 @@ export default function Home() {
       {/* STICKY CALL */}
       <a
         href="tel:+4640184268"
-        className="fixed bottom-24 right-4 bg-white text-black w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition hover:scale-110"
+        className="fixed bottom-24 right-4 bg-[#b85c38] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition hover:scale-110"
       >
         📞
       </a>
@@ -201,7 +203,7 @@ export default function Home() {
       {showTop && (
         <button
           onClick={scrollTop}
-          className="fixed bottom-40 right-4 bg-white text-black w-12 h-12 rounded-full shadow-xl transition hover:scale-110"
+          className="fixed bottom-40 right-4 bg-[#b85c38] text-white w-12 h-12 rounded-full shadow-xl transition hover:scale-110"
         >
           ↑
         </button>
