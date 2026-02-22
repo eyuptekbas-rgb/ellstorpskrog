@@ -45,40 +45,53 @@ export default function ReservationProvider({
                     e.preventDefault();
                     setSent(true);
                   }}
-                  className="space-y-4"
+                  className="space-y-5"
                 >
-                  <input
-                    type="text"
-                    placeholder="Navn"
-                    required
-                    className="w-full bg-[#111] text-white border border-[#b85c38]/30 rounded-2xl p-4 focus:outline-none focus:border-[#b85c38]"
-                  />
+                  <div className="space-y-2">
+                    <label className="text-sm text-white/70">Navn</label>
+                    <input
+                      type="text"
+                      required
+                      className="w-full bg-[#111] text-white border border-[#b85c38]/30 rounded-2xl p-4 focus:outline-none focus:border-[#b85c38]"
+                    />
+                  </div>
 
-                  <input
-                    type="tel"
-                    placeholder="Telefonnummer"
-                    required
-                    className="w-full bg-[#111] text-white border border-[#b85c38]/30 rounded-2xl p-4 focus:outline-none focus:border-[#b85c38]"
-                  />
+                  <div className="space-y-2">
+                    <label className="text-sm text-white/70">Telefonnummer</label>
+                    <input
+                      type="tel"
+                      required
+                      className="w-full bg-[#111] text-white border border-[#b85c38]/30 rounded-2xl p-4 focus:outline-none focus:border-[#b85c38]"
+                    />
+                  </div>
 
-                  <input
-                    type="number"
-                    placeholder="Antal personer"
-                    required
-                    className="w-full bg-[#111] text-white border border-[#b85c38]/30 rounded-2xl p-4 focus:outline-none focus:border-[#b85c38]"
-                  />
+                  <div className="space-y-2">
+                    <label className="text-sm text-white/70">Antal personer</label>
+                    <input
+                      type="number"
+                      required
+                      min={1}
+                      className="w-full bg-[#111] text-white border border-[#b85c38]/30 rounded-2xl p-4 focus:outline-none focus:border-[#b85c38]"
+                    />
+                  </div>
 
-                  <input
-                    type="date"
-                    required
-                    className="w-full bg-[#111] text-white border border-[#b85c38]/30 rounded-2xl p-4 focus:outline-none focus:border-[#b85c38]"
-                  />
+                  <div className="space-y-2">
+                    <label className="text-sm text-white/70">Dato</label>
+                    <input
+                      type="date"
+                      required
+                      className="w-full bg-[#111] text-white border border-[#b85c38]/30 rounded-2xl p-4 focus:outline-none focus:border-[#b85c38]"
+                    />
+                  </div>
 
-                  <input
-                    type="time"
-                    required
-                    className="w-full bg-[#111] text-white border border-[#b85c38]/30 rounded-2xl p-4 focus:outline-none focus:border-[#b85c38]"
-                  />
+                  <div className="space-y-2">
+                    <label className="text-sm text-white/70">Tid</label>
+                    <input
+                      type="time"
+                      required
+                      className="w-full bg-[#111] text-white border border-[#b85c38]/30 rounded-2xl p-4 focus:outline-none focus:border-[#b85c38]"
+                    />
+                  </div>
 
                   <button
                     type="submit"
