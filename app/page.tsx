@@ -52,7 +52,7 @@ export default function Home() {
   const scrollTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
   return (
-    <main className="bg-[#0f0f0f] text-white min-h-screen">
+    <main className="bg-gradient-to-b from-[#0f0f0f] via-[#111111] to-[#141414] text-white min-h-screen">
 
       {/* HERO */}
       <section className="relative w-full h-[320px] overflow-hidden">
@@ -64,14 +64,14 @@ export default function Home() {
           className="object-cover brightness-95"
         />
 
-        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/50 to-black/90"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/80"></div>
 
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 animate-fadeIn">
-          <h1 className="text-3xl md:text-4xl font-semibold tracking-wide">
+          <h1 className="text-3xl md:text-5xl font-serif tracking-wide">
             Välkommen till Ellstorps Krog
           </h1>
 
-          <div className="w-20 h-1 bg-[#b85c38] rounded-full mt-4 mb-3"></div>
+          <div className="w-24 h-[2px] bg-[#b85c38] rounded-full mt-5 mb-4"></div>
 
           <p className="text-white/70 text-sm">
             Klassisk husmanskost i hjärtat av Malmö
@@ -88,11 +88,11 @@ export default function Home() {
       </section>
 
       {/* MENU PDF */}
-      <section className="px-6 py-8 text-center">
+      <section className="px-6 py-10 text-center">
         <a
           href="/menu.pdf"
           target="_blank"
-          className="inline-block bg-[#b85c38] text-white px-6 py-3 rounded-2xl font-semibold transition hover:bg-[#9e4e2f] active:scale-95"
+          className="inline-block bg-[#b85c38] text-white px-8 py-4 rounded-2xl font-semibold transition duration-300 hover:bg-[#9e4e2f] hover:shadow-lg active:scale-95"
         >
           📄 Se Meny (PDF)
         </a>
@@ -112,7 +112,7 @@ export default function Home() {
         ].map(([icon, title, text], i) => (
           <div
             key={i}
-            className="border border-[#b85c38]/40 bg-white/5 rounded-2xl p-6 flex gap-4 transition duration-300 hover:bg-[#b85c38]/10 hover:shadow-[0_0_25px_rgba(184,92,56,0.25)] active:scale-95"
+            className="bg-[#1a1a1a] border border-[#b85c38]/30 rounded-2xl p-6 flex gap-4 transition duration-300 hover:bg-[#b85c38]/10 hover:shadow-[0_0_30px_rgba(184,92,56,0.25)] active:scale-95"
           >
             <span className="text-2xl w-8 text-center">{icon}</span>
             <div>
@@ -130,20 +130,20 @@ export default function Home() {
         </h4>
 
         <div className="space-y-4">
-          <button className="w-full bg-[#b85c38] text-white py-4 rounded-2xl font-semibold transition hover:bg-[#9e4e2f] active:scale-95">
+          <button className="w-full bg-[#b85c38] text-white py-4 rounded-2xl font-semibold transition duration-300 hover:bg-[#9e4e2f] hover:shadow-lg active:scale-95">
             🥡 Ta med
           </button>
 
           <a
             href="tel:+4640184268"
-            className="block w-full bg-[#b85c38] text-white py-4 rounded-2xl font-semibold transition hover:bg-[#9e4e2f] active:scale-95"
+            className="block w-full bg-[#b85c38] text-white py-4 rounded-2xl font-semibold transition duration-300 hover:bg-[#9e4e2f] hover:shadow-lg active:scale-95"
           >
             📞 Ring nu
           </a>
 
           <button
             onClick={openDelivery}
-            className="w-full bg-[#b85c38] text-white py-4 rounded-2xl font-semibold transition hover:bg-[#9e4e2f] active:scale-95"
+            className="w-full bg-[#b85c38] text-white py-4 rounded-2xl font-semibold transition duration-300 hover:bg-[#9e4e2f] hover:shadow-lg active:scale-95"
           >
             🚚 Hemkörning
           </button>
@@ -194,7 +194,7 @@ export default function Home() {
       {/* STICKY CALL */}
       <a
         href="tel:+4640184268"
-        className="fixed bottom-24 right-4 bg-[#b85c38] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition hover:scale-110"
+        className="fixed bottom-24 right-4 bg-[#b85c38] text-white w-14 h-14 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(184,92,56,0.4)] transition hover:scale-110"
       >
         📞
       </a>
@@ -203,7 +203,7 @@ export default function Home() {
       {showTop && (
         <button
           onClick={scrollTop}
-          className="fixed bottom-40 right-4 bg-[#b85c38] text-white w-12 h-12 rounded-full shadow-xl transition hover:scale-110"
+          className="fixed bottom-40 right-4 bg-[#b85c38] text-white w-12 h-12 rounded-full shadow-[0_0_20px_rgba(184,92,56,0.4)] transition hover:scale-110"
         >
           ↑
         </button>
