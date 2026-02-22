@@ -7,7 +7,8 @@ import Footer from "../components/Footer";
 
 export default function Home() {
   const [showDelivery, setShowDelivery] = useState(false);
-  const [loadingDelivery, setLoadingDelivery] = useState(false);
+  const [showReservation, setShowReservation] = useState(false);
+  const [reservationSent, setReservationSent] = useState(false);
   const [showTop, setShowTop] = useState(false);
   const [showNews, setShowNews] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
@@ -28,27 +29,11 @@ export default function Home() {
     if (!seen) setShowNews(true);
   }, []);
 
-  useEffect(() => {
-    if (showNews) {
-      const timer = setTimeout(() => closeNews(), 7000);
-      return () => clearTimeout(timer);
-    }
-  }, [showNews]);
-
   const closeNews = () => {
     setShowNews(false);
     localStorage.setItem("newsSeen", "true");
   };
 
-  const openDelivery = () => {
-    setLoadingDelivery(true);
-    setTimeout(() => {
-      setLoadingDelivery(false);
-      setShowDelivery(true);
-    }, 500);
-  };
-
-  const scrollDown = () => window.scrollTo({ top: 500, behavior: "smooth" });
   const scrollTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
   return (
@@ -81,135 +66,163 @@ export default function Home() {
             {isOpen ? "🟢 Öppet nu" : "🔴 Stängt"}
           </p>
         </div>
+      </section>
+
+      {/* BESTÄLL ONLINE */}
+      <section className="px-6 py-16 text-center space-y-5">
+        <h2 className="text-2xl font-serif mb-4">Beställ Online</h2>
+
+        <button className="w-full bg-[#b85c38] text-white py-5 text-lg rounded-2xl font-semibold hover:bg-[#9e4e2f] transition">
+          🥡 Ta med
+        </button>
+
+        <a
+          href="tel:+4640184268"
+          className="block w-full bg-[#b85c38] text-white py-5 text-lg rounded-2xl font-semibold hover:bg-[#9e4e2f] transition"
+        >
+          📞 Ring nu
+        </a>
 
         <button
-          onClick={scrollDown}
-          className="absolute bottom-6 w-full text-center animate-bounce text-white/60"
+          onClick={() => setShowDelivery(true)}
+          className="w-full bg-[#b85c38] text-white py-5 text-lg rounded-2xl font-semibold hover:bg-[#9e4e2f] transition"
         >
-          ↓
+          🚚 Hemkörning
         </button>
-      </section>
 
-      {/* BESTÄLL ONLINE – PRIORITET PÅ MOBIL */}
-      <section className="px-6 py-16 text-center">
-        <h2 className="text-2xl font-serif mb-8 tracking-wide">
-          Beställ Online
-        </h2>
-
-        <div className="space-y-5">
-          <button className="w-full bg-[#b85c38] text-white py-5 text-lg rounded-2xl font-semibold transition duration-300 hover:bg-[#9e4e2f] hover:shadow-lg active:scale-95">
-            🥡 Ta med
-          </button>
-
-          <a
-            href="tel:+4640184268"
-            className="block w-full bg-[#b85c38] text-white py-5 text-lg rounded-2xl font-semibold transition duration-300 hover:bg-[#9e4e2f] hover:shadow-lg active:scale-95"
-          >
-            📞 Ring nu
-          </a>
-
-          <button
-            onClick={openDelivery}
-            className="w-full bg-[#b85c38] text-white py-5 text-lg rounded-2xl font-semibold transition duration-300 hover:bg-[#9e4e2f] hover:shadow-lg active:scale-95"
-          >
-            🚚 Hemkörning
-          </button>
-        </div>
-      </section>
-
-      {/* INFO */}
-      <section className="px-6 py-16 space-y-6">
-        <h2 className="text-center text-3xl font-serif tracking-wide">
-          VI HAR FULLSTÄNDIGA RÄTTIGHETER
-        </h2>
-
-        {[
-          ["🎁", "10% Foodbonus", "Samla bonus vid varje beställning"],
-          ["⭐", "5% Foodbonus", "Tipsa en vän och få extra bonus"],
-          ["🎓", "10% Studentrabatt", "Gäller i restaurangen"],
-          ["📅", "Boka bord", "Reservera snabbt och enkelt"],
-        ].map(([icon, title, text], i) => (
-          <div
-            key={i}
-            className="bg-[#1a1a1a] border border-[#b85c38]/30 rounded-2xl p-7 flex gap-4 transition duration-300 hover:bg-[#b85c38]/10 hover:shadow-[0_0_30px_rgba(184,92,56,0.25)] active:scale-95"
-          >
-            <span className="text-2xl w-8 text-center">{icon}</span>
-            <div>
-              <p className="font-semibold text-lg">{title}</p>
-              <p className="text-sm text-white/60 mt-1">{text}</p>
-            </div>
-          </div>
-        ))}
-      </section>
-
-      {/* MENU PDF */}
-      <section className="px-6 py-16 text-center">
-        <a
-          href="/menu.pdf"
-          target="_blank"
-          className="inline-block bg-[#b85c38] text-white px-8 py-5 text-lg rounded-2xl font-semibold transition duration-300 hover:bg-[#9e4e2f] hover:shadow-lg active:scale-95"
+        <button
+          onClick={() => setShowReservation(true)}
+          className="w-full bg-white text-black py-5 text-lg rounded-2xl font-semibold"
         >
-          📄 Se Meny (PDF)
-        </a>
+          📅 Boka Bord
+        </button>
       </section>
 
       {/* DELIVERY POPUP */}
       {showDelivery && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm">
-          <div className="bg-[#1a1a1a] rounded-2xl p-8 w-[90%] max-w-sm text-center space-y-5 shadow-2xl border border-[#b85c38]/40">
-            <h3 className="text-xl font-semibold text-white">Välj leverans</h3>
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm px-4">
+          <div className="bg-[#1a1a1a] w-full max-w-sm rounded-2xl p-8 space-y-5 border border-[#b85c38]/40">
+            <h3 className="text-xl font-serif text-center">Välj leverans</h3>
 
-            <a href="https://wolt.com" target="_blank" className="block bg-[#b85c38] text-white py-4 rounded-2xl">
+            <a href="https://wolt.com" target="_blank" className="block bg-[#b85c38] text-white py-4 rounded-2xl text-center">
               Wolt
             </a>
 
-            <a href="https://foodora.se" target="_blank" className="block bg-[#b85c38] text-white py-4 rounded-2xl">
+            <a href="https://foodora.se" target="_blank" className="block bg-[#b85c38] text-white py-4 rounded-2xl text-center">
               Foodora
             </a>
 
-            <button onClick={() => setShowDelivery(false)} className="text-sm text-white/50">
-              Stäng
+            <button
+              onClick={() => setShowDelivery(false)}
+              className="text-center w-full text-sm text-white/50"
+            >
+              Luk
             </button>
           </div>
         </div>
       )}
 
-      {/* NEWS POPUP */}
-      {showNews && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm">
-          <div className="bg-[#1a1a1a] rounded-2xl p-8 w-[90%] max-w-sm text-center space-y-5 shadow-2xl border border-[#b85c38]/40">
-            <h3 className="text-xl font-semibold text-white">Information</h3>
-            <p className="text-sm text-white/70">
-              Her skriver du din egen nyhed.
-            </p>
-            <button onClick={closeNews} className="bg-[#b85c38] text-white px-4 py-3 rounded-xl">
-              Stäng
-            </button>
+      {/* RESERVATION POPUP */}
+      {showReservation && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm px-4">
+          <div className="bg-[#1a1a1a] w-full max-w-md rounded-2xl p-8 space-y-6 border border-[#b85c38]/40">
+
+            {!reservationSent ? (
+              <>
+                <h3 className="text-2xl font-serif text-center">
+                  Reserver Bord
+                </h3>
+
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    setReservationSent(true);
+                  }}
+                  className="space-y-4"
+                >
+
+                  <input
+                    type="text"
+                    placeholder="Navn"
+                    required
+                    className="w-full bg-[#111] border border-[#b85c38]/30 rounded-2xl p-4 focus:outline-none focus:border-[#b85c38]"
+                  />
+
+                  <input
+                    type="tel"
+                    placeholder="Telefonnummer"
+                    required
+                    className="w-full bg-[#111] border border-[#b85c38]/30 rounded-2xl p-4 focus:outline-none focus:border-[#b85c38]"
+                  />
+
+                  <input
+                    type="number"
+                    placeholder="Antal personer"
+                    required
+                    className="w-full bg-[#111] border border-[#b85c38]/30 rounded-2xl p-4 focus:outline-none focus:border-[#b85c38]"
+                  />
+
+                  <input
+                    type="date"
+                    required
+                    className="w-full bg-[#111] border border-[#b85c38]/30 rounded-2xl p-4 focus:outline-none focus:border-[#b85c38]"
+                  />
+
+                  <input
+                    type="time"
+                    required
+                    className="w-full bg-[#111] border border-[#b85c38]/30 rounded-2xl p-4 focus:outline-none focus:border-[#b85c38]"
+                  />
+
+                  <button
+                    type="submit"
+                    className="w-full bg-[#b85c38] text-white py-4 rounded-2xl font-semibold hover:bg-[#9e4e2f] transition"
+                  >
+                    Send Reservation
+                  </button>
+
+                </form>
+
+                <button
+                  onClick={() => setShowReservation(false)}
+                  className="text-center w-full text-sm text-white/50"
+                >
+                  Luk
+                </button>
+              </>
+            ) : (
+              <div className="text-center space-y-4">
+                <h3 className="text-xl font-serif">
+                  Tak for din reservation
+                </h3>
+                <p className="text-white/70 text-sm">
+                  Vi kontakter dig hurtigst muligt.
+                </p>
+                <button
+                  onClick={() => {
+                    setReservationSent(false);
+                    setShowReservation(false);
+                  }}
+                  className="w-full bg-[#b85c38] py-3 rounded-xl"
+                >
+                  Luk
+                </button>
+              </div>
+            )}
+
           </div>
         </div>
       )}
-
-      {/* STICKY CALL */}
-      <a
-        href="tel:+4640184268"
-        className="fixed bottom-28 right-4 bg-[#b85c38] text-white w-16 h-16 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(184,92,56,0.4)] transition hover:scale-110"
-      >
-        📞
-      </a>
 
       {/* TO TOP */}
       {showTop && (
         <button
           onClick={scrollTop}
-          className="fixed bottom-44 right-4 bg-[#b85c38] text-white w-14 h-14 rounded-full shadow-[0_0_20px_rgba(184,92,56,0.4)] transition hover:scale-110"
+          className="fixed bottom-40 right-4 bg-[#b85c38] text-white w-14 h-14 rounded-full"
         >
           ↑
         </button>
       )}
-
-      <p className="text-xs text-white/40 text-center py-8">
-        © {new Date().getFullYear()} Ellstorps Krog – Malmö
-      </p>
 
       <Footer />
       <BottomNav />
