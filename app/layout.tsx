@@ -2,6 +2,7 @@ import "./globals.css";
 import { Playfair_Display, Montserrat } from "next/font/google";
 import type { Metadata } from "next";
 import Header from "@/components/Header";
+import BottomNav from "@/components/BottomNav";
 import ReservationProvider from "@/components/ReservationProvider";
 
 const playfair = Playfair_Display({
@@ -20,7 +21,8 @@ const montserrat = Montserrat({
 
 export const metadata: Metadata = {
   title: "Ellstorps Krog",
-  description: "Restaurant i Malmö – Beställ online, boka bord eller hemkörning.",
+  description:
+    "Restaurant i Malmö – Beställ online, boka bord eller hemkörning.",
 };
 
 export default function RootLayout({
@@ -35,9 +37,12 @@ export default function RootLayout({
       >
         <ReservationProvider>
           <Header />
+
           <main className="pt-16 font-[var(--font-montserrat)]">
             {children}
           </main>
+
+          <BottomNav />
         </ReservationProvider>
       </body>
     </html>
