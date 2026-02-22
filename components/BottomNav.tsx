@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, CalendarDays, ShoppingCart, MessageCircle, User } from "lucide-react";
+import { useReservation } from "@/components/ReservationProvider";
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const { openReservation } = useReservation();
 
   const iconWrap = (path: string) =>
     `w-9 h-9 flex items-center justify-center rounded-xl transition ${
@@ -34,12 +36,16 @@ export default function BottomNav() {
               <span className={textClass("/")}>Hem</span>
             </Link>
 
-            <Link href="/bord" className="flex flex-col items-center">
+            {/* RESERVATION POPUP */}
+            <button
+              onClick={openReservation}
+              className="flex flex-col items-center"
+            >
               <div className={iconWrap("/bord")}>
                 <CalendarDays size={18} />
               </div>
               <span className={textClass("/bord")}>Reservation</span>
-            </Link>
+            </button>
 
             <Link href="/kurv" className="flex flex-col items-center">
               <div className={iconWrap("/kurv")}>
