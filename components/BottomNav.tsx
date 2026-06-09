@@ -68,7 +68,7 @@ function SideNavLink({
     </>
   );
 
-  if (onClick) {
+  if (onClick || !href) {
     return (
       <button type="button" onClick={onClick} className={className}>
         {inner}
@@ -77,7 +77,7 @@ function SideNavLink({
   }
 
   return (
-    <Link href={href!} className={className}>
+    <Link href={href} className={className}>
       {inner}
     </Link>
   );
@@ -129,7 +129,7 @@ export default function BottomNav() {
               active={active}
               onClick={
                 sideItem.action === "reservation"
-                  ? reservation?.openReservation
+                  ? () => reservation?.openReservation?.()
                   : undefined
               }
             />
