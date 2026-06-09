@@ -1,0 +1,56 @@
+{
+  "name": "onlinefood",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build --webpack",
+    "start": "next start",
+    "lint": "eslint",
+    "postinstall": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "prisma db seed",
+    "db:studio": "prisma studio",
+    "db:check": "npx tsx scripts/check-db.ts",
+    "db:stabilize": "npx tsx scripts/stabilize-db.ts",
+    "pwa:assets": "npx tsx scripts/generate-pwa-assets.ts",
+    "pwa:bootstrap": "npx tsx scripts/bootstrap-pwa-icons.ts",
+    "brand:images": "npx tsx scripts/generate-brand-images.ts",
+    "check:env": "npx tsx scripts/check-env.ts"
+  },
+  "prisma": {
+    "seed": "npx tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@ducanh2912/next-pwa": "^10.2.9",
+    "@prisma/client": "^6.19.3",
+    "@react-email/components": "^1.0.12",
+    "@react-email/render": "^2.0.8",
+    "bcryptjs": "^3.0.3",
+    "jose": "^6.2.3",
+    "lucide-react": "^0.563.0",
+    "next": "16.1.6",
+    "next-auth": "^5.0.0-beta.31",
+    "nodemailer": "^8.0.0",
+    "prisma": "^6.19.3",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "resend": "^6.9.1",
+    "stripe": "^22.2.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20",
+    "@types/nodemailer": "^7.0.9",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.6",
+    "playwright": "^1.52.0",
+    "sharp": "^0.34.5",
+    "tailwindcss": "^4",
+    "tsx": "^4.22.4",
+    "typescript": "5.9.3"
+  }
+}

@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "NotificationLog" ADD COLUMN IF NOT EXISTS "retryCount" INTEGER NOT NULL DEFAULT 0;
