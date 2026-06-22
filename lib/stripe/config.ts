@@ -63,18 +63,32 @@ export function buildStripeConfig(settings: SiteSettings): StripeConfig {
   };
 }
 
+export type StripeSettingsFields = Pick<
+  SiteSettings,
+  | "stripeTestMode"
+  | "stripeSecretKeyTest"
+  | "stripeSecretKeyLive"
+  | "stripePublishableKeyTest"
+  | "stripePublishableKeyLive"
+  | "stripeWebhookSecretTest"
+  | "stripeWebhookSecretLive"
+  | "stripeEnabled"
+>;
+
 /** All webhook signing secrets (test + live) for signature verification */
 export function collectStripeWebhookSecrets(
-  settings: SiteSettings
+  settings: StripeSettingsFields
 ): string[] {
   const testConfig = buildStripeConfig({
     ...settings,
     stripeTestMode: true,
-  });
+    stripeEnabled: settings.stripeEnabled ?? true,
+  } as SiteSettings);
   const liveConfig = buildStripeConfig({
     ...settings,
     stripeTestMode: false,
-  });
+    stripeEnabled: settings.stripeEnabled ?? true,
+  } as SiteSettings);
 
   const secrets = [
     testConfig.webhookSecret,
@@ -87,9 +101,34 @@ export function collectStripeWebhookSecrets(
   return [...new Set(secrets)];
 }
 
-export async function getStripeConfig(): Promise<StripeConfig> {
-  const settings = await ensureSiteSettings();
+export async function getStripeConfig(tenantId?: string): Promise<StripeConfig> {
+  const settings = await ensureSiteSettings(tenantId);
   return buildStripeConfig(settings);
+}
+
+export async function collectAllStripeWebhookSecrets(): Promise<string[]> {
+  const { prisma } = await import("@/lib/prisma");
+  const allSettings = await prisma.siteSettings.findMany({
+    select: {
+      stripeEnabled: true,
+      stripeTestMode: true,
+      stripeSecretKeyTest: true,
+      stripeSecretKeyLive: true,
+      stripePublishableKeyTest: true,
+      stripePublishableKeyLive: true,
+      stripeWebhookSecretTest: true,
+      stripeWebhookSecretLive: true,
+    },
+  });
+
+  const secrets = new Set<string>();
+  for (const settings of allSettings) {
+    for (const secret of collectStripeWebhookSecrets(settings)) {
+      secrets.add(secret);
+    }
+  }
+
+  return [...secrets];
 }
 
 export function getAppBaseUrl(): string {

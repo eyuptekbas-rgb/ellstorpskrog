@@ -1,7 +1,10 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Phone, Star, UtensilsCrossed } from "lucide-react";
 import BrandLogo from "@/components/brand/BrandLogo";
+import { useTenantPublicPath } from "@/components/tenant/TenantPublicPathProvider";
 import { resolveHeroImage } from "@/lib/brand/images";
 
 type Props = {
@@ -23,6 +26,7 @@ export default function HomeHero({
   pickupEnabled,
   deliveryEnabled,
 }: Props) {
+  const tp = useTenantPublicPath();
   const src = resolveHeroImage(heroImage);
   const canOrder = pickupEnabled || deliveryEnabled;
 
@@ -89,7 +93,7 @@ export default function HomeHero({
           <div className="min-w-0 flex-1 text-center lg:text-left">
             <BrandLogo
               size="home-hero"
-              href="/"
+              href={tp("/")}
               className="mx-auto lg:hidden"
               priority
             />
@@ -113,7 +117,7 @@ export default function HomeHero({
             <div className="mx-auto mt-4 flex max-w-md flex-col gap-2.5 sm:mt-10 sm:flex-row sm:items-center lg:mx-0 lg:mt-6 lg:max-w-none lg:gap-3.5">
               {canOrder && (
                 <Link
-                  href="/menu"
+                  href={tp("/menu")}
                   className="btn-primary group flex w-full items-center justify-center gap-2 sm:w-auto"
                 >
                   Beställ online
@@ -125,7 +129,7 @@ export default function HomeHero({
               )}
 
               <Link
-                href="/menu"
+                href={tp("/menu")}
                 className="btn-secondary flex w-full items-center justify-center gap-2 sm:w-auto"
               >
                 <UtensilsCrossed size={18} />

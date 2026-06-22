@@ -2,12 +2,16 @@ import { NextResponse } from "next/server";
 import { getSeoSettings } from "@/lib/seo/metadata";
 import { ensureSiteSettings } from "@/lib/settings";
 import { prisma } from "@/lib/prisma";
+import { getAdminTenantId, tenantApiError } from "@/lib/tenant/admin-api";
 
 export async function GET() {
   try {
-    const settings = await getSeoSettings();
+    const tenantId = await getAdminTenantId();
+    const settings = await getSeoSettings(tenantId);
     return NextResponse.json(settings);
   } catch (error) {
+    const apiError = tenantApiError(error);
+    if (apiError) return apiError;
     console.error("GET /api/seo error:", error);
     return NextResponse.json(
       { error: "Failed to fetch SEO settings" },
@@ -25,11 +29,12 @@ type UpdateSeoBody = {
 
 export async function PATCH(req: Request) {
   try {
-    await ensureSiteSettings();
+    const tenantId = await getAdminTenantId();
+    await ensureSiteSettings(tenantId);
     const body: UpdateSeoBody = await req.json();
 
     const settings = await prisma.siteSettings.update({
-      where: { id: 1 },
+      where: { tenantId },
       data: {
         ...(body.metaTitle !== undefined && {
           metaTitle: body.metaTitle?.trim() || null,
@@ -54,6 +59,8 @@ export async function PATCH(req: Request) {
       restaurantName: settings.restaurantName,
     });
   } catch (error) {
+    const apiError = tenantApiError(error);
+    if (apiError) return apiError;
     console.error("PATCH /api/seo error:", error);
     return NextResponse.json(
       { error: "Failed to update SEO settings" },

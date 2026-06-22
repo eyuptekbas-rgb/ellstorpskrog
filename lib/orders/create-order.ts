@@ -15,6 +15,7 @@ export type OrderItemInput = {
 };
 
 export type CreateOrderInput = {
+  tenantId: string;
   customerName: string;
   customerPhone: string;
   customerEmail: string;
@@ -37,16 +38,13 @@ export async function createOrder(
   tx: Prisma.TransactionClient,
   input: CreateOrderInput
 ): Promise<OrderWithRelations> {
-  const orderNumber = await generateOrderNumber(tx);
+  const orderNumber = await generateOrderNumber(tx, input.tenantId);
 
-  const paymentStatus =
-    input.paymentStatus ??
-    (input.paymentMethod === PaymentMethod.CARD
-      ? PaymentStatus.PENDING
-      : PaymentStatus.PENDING);
+  const paymentStatus = input.paymentStatus ?? PaymentStatus.PENDING;
 
   return tx.order.create({
     data: {
+      tenantId: input.tenantId,
       orderNumber,
       customerName: input.customerName,
       customerPhone: input.customerPhone,
@@ -91,9 +89,20 @@ export const PAYMENT_MAP: Record<string, PaymentMethod> = {
   card: PaymentMethod.CARD,
   CARD: PaymentMethod.CARD,
   afhentning: PaymentMethod.ON_PICKUP,
-  on_pickup: PaymentMethod.ON_PICKUP,
   ON_PICKUP: PaymentMethod.ON_PICKUP,
   levering_betalning: PaymentMethod.ON_DELIVERY,
-  on_delivery: PaymentMethod.ON_DELIVERY,
   ON_DELIVERY: PaymentMethod.ON_DELIVERY,
+  apple_pay: PaymentMethod.APPLE_PAY,
+  APPLE_PAY: PaymentMethod.APPLE_PAY,
+  google_pay: PaymentMethod.GOOGLE_PAY,
+  GOOGLE_PAY: PaymentMethod.GOOGLE_PAY,
+  swish: PaymentMethod.SWISH,
+  SWISH: PaymentMethod.SWISH,
+  mobilepay: PaymentMethod.MOBILEPAY,
+  MOBILEPAY: PaymentMethod.MOBILEPAY,
 };
+
+export const OFFLINE_PAYMENT_METHODS: PaymentMethod[] = [
+  PaymentMethod.ON_PICKUP,
+  PaymentMethod.ON_DELIVERY,
+];

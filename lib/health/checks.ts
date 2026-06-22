@@ -30,7 +30,9 @@ export type HealthCheckResult = {
 };
 
 function authStatus(): HealthCheckResult["auth"] {
-  const secret = process.env.AUTH_SECRET?.trim();
+  const secret =
+    process.env.AUTH_SECRET?.trim() ||
+    process.env.NEXTAUTH_SECRET?.trim();
   if (!secret) {
     return { status: "error", message: "AUTH_SECRET is not set" };
   }

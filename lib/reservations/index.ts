@@ -4,13 +4,19 @@ import { isTimeSlotAvailable, isValidGuestCount } from "./booking-ui";
 export const RESERVATION_STATUS_LABELS: Record<ReservationStatus, string> = {
   NEW: "Ny",
   CONFIRMED: "Bekräftad",
+  SEATED: "Placerad",
+  COMPLETED: "Avslutad",
+  NO_SHOW: "Utebliven",
   CANCELLED: "Avbokad",
 };
 
 export const RESERVATION_STATUS_FILTERS = [
   { key: "ALL" as const, label: "Alla" },
-  { key: ReservationStatus.NEW, label: "Ny" },
+  { key: ReservationStatus.NEW, label: "Väntar" },
   { key: ReservationStatus.CONFIRMED, label: "Bekräftad" },
+  { key: ReservationStatus.SEATED, label: "Placerad" },
+  { key: ReservationStatus.COMPLETED, label: "Avslutad" },
+  { key: ReservationStatus.NO_SHOW, label: "Utebliven" },
   { key: ReservationStatus.CANCELLED, label: "Avbokad" },
 ];
 
@@ -24,6 +30,12 @@ export function reservationStatusStyle(status: ReservationStatus): string {
       return "bg-[#b85c38]/15 text-[#e8c4a8] ring-[#b85c38]/30";
     case ReservationStatus.CONFIRMED:
       return "bg-emerald-500/15 text-emerald-200 ring-emerald-500/25";
+    case ReservationStatus.SEATED:
+      return "bg-blue-500/15 text-blue-200 ring-blue-500/25";
+    case ReservationStatus.COMPLETED:
+      return "bg-white/8 text-white/55 ring-white/10";
+    case ReservationStatus.NO_SHOW:
+      return "bg-amber-500/15 text-amber-200 ring-amber-500/25";
     case ReservationStatus.CANCELLED:
       return "bg-white/5 text-white/45 ring-white/10";
     default:

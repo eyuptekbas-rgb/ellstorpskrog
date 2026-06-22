@@ -21,8 +21,10 @@ export default function CookieConsentBanner() {
 
   useEffect(() => {
     if (consent) {
-      setAnalytics(consent.analytics);
-      setMarketing(consent.marketing);
+      queueMicrotask(() => {
+        setAnalytics(consent.analytics);
+        setMarketing(consent.marketing);
+      });
     }
   }, [consent]);
 

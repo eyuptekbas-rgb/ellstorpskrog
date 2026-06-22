@@ -6,6 +6,7 @@ import {
 } from "@prisma/client";
 import { notifyPaymentCompleted } from "@/lib/email/notify";
 import { prisma } from "@/lib/prisma";
+import { publishNewOrder } from "@/lib/realtime/publish";
 
 export async function markOrderPaid(
   orderId: string,
@@ -33,6 +34,7 @@ export async function markOrderPaid(
   });
 
   void notifyPaymentCompleted(order);
+  publishNewOrder(order.tenantId, order.id, order.orderNumber);
   return order;
 }
 
@@ -45,6 +47,17 @@ export async function markOrderPaymentFailed(orderId: string) {
   return prisma.order.update({
     where: { id: orderId },
     data: { paymentStatus: PaymentStatus.FAILED },
+    include: { items: true, statusHistory: true },
+  });
+}
+
+export async function markOrderRefunded(orderId: string) {
+  const existing = await prisma.order.findUnique({ where: { id: orderId } });
+  if (!existing) return null;
+
+  return prisma.order.update({
+    where: { id: orderId },
+    data: { paymentStatus: PaymentStatus.REFUNDED },
     include: { items: true, statusHistory: true },
   });
 }

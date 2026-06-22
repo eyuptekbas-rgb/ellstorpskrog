@@ -14,8 +14,10 @@ import { prisma } from "@/lib/prisma";
 
 const MAX_RETRIES = 3;
 
-export async function retryFailedNotification(logId: string) {
-  const log = await prisma.notificationLog.findUnique({ where: { id: logId } });
+export async function retryFailedNotification(logId: string, tenantId: string) {
+  const log = await prisma.notificationLog.findFirst({
+    where: { id: logId, order: { tenantId } },
+  });
 
   if (!log) {
     throw new Error("Loggpost hittades inte");
@@ -33,8 +35,8 @@ export async function retryFailedNotification(logId: string) {
     throw new Error("Order saknas — kan inte försöka igen");
   }
 
-  const order = await prisma.order.findUnique({
-    where: { id: log.orderId },
+  const order = await prisma.order.findFirst({
+    where: { id: log.orderId, tenantId },
     include: { items: true },
   });
 
@@ -51,7 +53,7 @@ export async function retryFailedNotification(logId: string) {
     },
   });
 
-  const settings = await ensureSiteSettings();
+  const settings = await ensureSiteSettings(tenantId);
   const data = buildOrderEmailData(order, settings);
 
   return resendExistingLog({
@@ -65,12 +67,13 @@ export async function retryFailedNotification(logId: string) {
   });
 }
 
-export async function retryAllFailedNotifications(limit = 10) {
+export async function retryAllFailedNotifications(tenantId: string, limit = 10) {
   const failed = await prisma.notificationLog.findMany({
     where: {
       status: NotificationDeliveryStatus.FAILED,
       retryCount: { lt: MAX_RETRIES },
       orderId: { not: null },
+      order: { tenantId },
     },
     orderBy: { createdAt: "desc" },
     take: limit,
@@ -79,7 +82,7 @@ export async function retryAllFailedNotifications(limit = 10) {
   const results = [];
   for (const log of failed) {
     try {
-      const result = await retryFailedNotification(log.id);
+      const result = await retryFailedNotification(log.id, tenantId);
       results.push({ logId: log.id, ok: true, status: result.status });
     } catch (error) {
       results.push({

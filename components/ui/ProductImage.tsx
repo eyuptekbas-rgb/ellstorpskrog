@@ -19,6 +19,7 @@ type Props = {
   sizes?: string;
   priority?: boolean;
   thumbnail?: boolean;
+  onLoad?: () => void;
   /** When false, parent handles gradient overlay (e.g. product-image-shell) */
   overlay?: boolean;
 };
@@ -34,6 +35,7 @@ export default function ProductImage({
   sizes,
   priority = false,
   thumbnail = false,
+  onLoad,
   overlay = true,
 }: Props) {
   const resolved = thumbnail
@@ -61,6 +63,7 @@ export default function ProductImage({
       priority={priority}
       loading={priority ? undefined : "lazy"}
       unoptimized={shouldUnoptimizeImage(imgSrc)}
+      onLoad={onLoad}
       onError={() => {
         if (imgSrc !== fallback) setImgSrc(fallback);
       }}

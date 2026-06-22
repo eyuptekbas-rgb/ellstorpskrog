@@ -4,6 +4,7 @@ import { CalendarDays, Home, Phone, User, UtensilsCrossed } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useReservationOptional } from "@/components/ReservationProvider";
+import { stripTenantPrefix, withTenantPath } from "@/lib/tenant/public-path";
 
 type SideItem = {
   href?: string;
@@ -43,10 +44,10 @@ const NAV_ITEMS: Array<SideItem | PrimaryItem> = [
     action: "reservation",
   },
   {
-    href: "/login",
+    href: "/konto",
     label: "Konto",
     icon: User,
-    match: (p) => p.startsWith("/login"),
+    match: (p) => p.startsWith("/konto"),
   },
 ];
 
@@ -85,11 +86,19 @@ function SideNavLink({
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const logicalPath = stripTenantPrefix(pathname);
   const reservation = useReservationOptional();
 
-  if (pathname.startsWith("/checkout")) {
+  if (logicalPath.startsWith("/checkout")) {
     return null;
   }
+
+  const navItems = NAV_ITEMS.map((item) => {
+    if ("href" in item && item.href) {
+      return { ...item, href: withTenantPath(pathname, item.href) };
+    }
+    return item;
+  });
 
   return (
     <nav
@@ -97,9 +106,9 @@ export default function BottomNav() {
       aria-label="Mobilnavigation"
     >
       <div className="site-bottom-nav-bar mx-auto max-w-lg">
-        {NAV_ITEMS.map((item) => {
+        {navItems.map((item) => {
           if ("primary" in item && item.primary) {
-            const active = item.match(pathname);
+            const active = item.match(logicalPath);
             return (
               <Link
                 key={item.label}
@@ -120,7 +129,7 @@ export default function BottomNav() {
           const active =
             sideItem.action === "reservation"
               ? Boolean(reservation?.isReservationOpen)
-              : sideItem.match(pathname);
+              : sideItem.match(logicalPath);
 
           return (
             <SideNavLink

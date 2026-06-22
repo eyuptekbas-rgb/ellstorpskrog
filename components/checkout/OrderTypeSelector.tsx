@@ -1,3 +1,6 @@
+"use client";
+
+import { useRef } from "react";
 import { Check, MapPin, Store } from "lucide-react";
 
 export type OrderType = "afhentning" | "levering";
@@ -15,6 +18,8 @@ export default function OrderTypeSelector({
   deliveryEnabled,
   onChange,
 }: Props) {
+  const optionRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
   const options = [
     pickupEnabled && {
       value: "afhentning" as const,
@@ -38,20 +43,52 @@ export default function OrderTypeSelector({
     eta: string;
   }>;
 
+  const selectedIndex = options.findIndex((o) => o.value === orderType);
+
+  // Arrow-key navigation for the radio group (WAI-ARIA radio pattern).
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const count = options.length;
+    if (count === 0) return;
+    const base = selectedIndex < 0 ? 0 : selectedIndex;
+    let next = -1;
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (base + 1) % count;
+    else if (e.key === "ArrowLeft" || e.key === "ArrowUp")
+      next = (base - 1 + count) % count;
+    else if (e.key === "Home") next = 0;
+    else if (e.key === "End") next = count - 1;
+    else return;
+    e.preventDefault();
+    onChange(options[next].value);
+    optionRefs.current[next]?.focus();
+  };
+
   return (
     <section className="space-y-3">
       <div>
-        <h2 className="font-serif text-xl text-white">Hur vill du få maten?</h2>
-        <p className="mt-1 text-sm text-white/45">Välj avhämtning eller hemleverans</p>
+        <h2 id="order-type-heading" className="font-serif text-xl text-white">
+          Hur vill du få maten?
+        </h2>
+        <p className="mt-1 text-sm text-white/55">Välj avhämtning eller hemleverans</p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        {options.map(({ value, icon: Icon, title, description, eta }) => {
+      <div
+        role="radiogroup"
+        aria-labelledby="order-type-heading"
+        onKeyDown={handleKeyDown}
+        className="grid gap-3 sm:grid-cols-2"
+      >
+        {options.map(({ value, icon: Icon, title, description, eta }, index) => {
           const selected = orderType === value;
           return (
             <button
               key={value}
+              ref={(el) => {
+                optionRefs.current[index] = el;
+              }}
               type="button"
+              role="radio"
+              aria-checked={selected}
+              tabIndex={selected ? 0 : -1}
               onClick={() => onChange(value)}
               className={`relative flex flex-col rounded-2xl border p-4 text-left transition ${
                 selected
@@ -72,7 +109,7 @@ export default function OrderTypeSelector({
                 <Icon size={22} strokeWidth={1.75} />
               </div>
               <span className="font-semibold text-white">{title}</span>
-              <span className="mt-0.5 text-xs text-white/45">{description}</span>
+              <span className="mt-0.5 text-xs text-white/55">{description}</span>
               <span className="mt-2 inline-flex w-fit rounded-full bg-white/5 px-2.5 py-0.5 text-[11px] font-medium text-[#d4a574]">
                 {eta}
               </span>

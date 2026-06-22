@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { Clock, MapPin, ShoppingBag, Truck } from "lucide-react";
+import { useTenantPublicPath } from "@/components/tenant/TenantPublicPathProvider";
 
 type Props = {
   pickupEnabled: boolean;
@@ -10,6 +13,7 @@ export default function DeliveryPickup({
   pickupEnabled,
   deliveryEnabled,
 }: Props) {
+  const tp = useTenantPublicPath();
   if (!pickupEnabled && !deliveryEnabled) return null;
 
   return (
@@ -50,7 +54,7 @@ export default function DeliveryPickup({
                     Sallerupsvägen 28, Malmö
                   </li>
                 </ul>
-                <Link href="/menu" className="btn-primary w-full sm:w-auto">
+                <Link href={tp("/menu")} className="btn-primary w-full sm:w-auto">
                   Beställ för avhämtning
                 </Link>
               </div>
@@ -80,7 +84,7 @@ export default function DeliveryPickup({
                     Malmö centrum & syd
                   </li>
                 </ul>
-                <Link href="/menu" className="btn-secondary w-full sm:w-auto">
+                <Link href={tp("/menu")} className="btn-secondary w-full sm:w-auto">
                   Beställ hemleverans
                 </Link>
               </div>

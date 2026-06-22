@@ -8,17 +8,34 @@ export default function OrderReceivedEmail({
   order,
   restaurantName,
 }: OrderEmailData) {
+  const hasWaitTime =
+    order.estimatedReadyMinutes != null && order.estimatedReadyMinutes > 0;
+
   return (
     <EmailLayout
-      preview={`Order mottagen ${order.orderNumber}`}
+      preview={
+        hasWaitTime
+          ? `Forventet ventetid ${order.estimatedReadyMinutes} min — ${order.orderNumber}`
+          : `Order mottagen ${order.orderNumber}`
+      }
       restaurantName={restaurantName}
     >
       <Heading style={{ color: "#18181b", fontSize: "20px", margin: "0 0 8px" }}>
-        Order mottagen
+        {hasWaitTime ? "Bestilling bekræftet" : "Order mottagen"}
       </Heading>
       <Text style={paragraph}>
-        Hej {order.customerName}, tack för din beställning! Vi har mottagit order{" "}
-        {order.orderNumber} och behandlar den så snart som möjligt.
+        {hasWaitTime ? (
+          <>
+            Hej {order.customerName}, din bestilling {order.orderNumber} er
+            bekræftet. Forventet ventetid: {order.estimatedReadyMinutes}{" "}
+            minutter.
+          </>
+        ) : (
+          <>
+            Hej {order.customerName}, tack för din beställning! Vi har mottagit
+            order {order.orderNumber} och behandlar den så snart som möjligt.
+          </>
+        )}
       </Text>
       <OrderSummary order={order} />
       <Text style={{ ...paragraph, marginTop: "24px" }}>

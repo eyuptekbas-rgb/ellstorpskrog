@@ -1,142 +1,96 @@
-# Launch Checklist — Ellstorps Krog
+# Launch Checklist
 
-Printable go-live checklist. Full details in `DEPLOYMENT_GUIDE.md`.
+Use this checklist before go-live. All items should be verified in staging with production-like env vars.
 
-**Target:** `https://www.ellstorpskrog.se`  
-**Go-live gate:** `/admin/system` ≥ 80%, zero blockers
+## Environment
 
----
+- [ ] `DATABASE_URL` reachable from app host
+- [ ] `AUTH_SECRET` ≥ 32 chars, not a placeholder
+- [ ] `AUTH_URL` / `NEXT_PUBLIC_APP_URL` set to production HTTPS
+- [ ] Stripe live keys + webhook secret configured
+- [ ] Resend email keys configured
+- [ ] `CRON_SECRET` set for billing crons
+- [ ] `npm run check:env` passes
+- [ ] `GET /api/deployment/diagnostics` returns `ready: true`
 
-## Pre-deploy
+## Security
 
-- [ ] `npm run build` passes locally
-- [ ] `npm run pwa:bootstrap` — icons in `public/icons/`
-- [ ] `npm run brand:images` — `public/hero.jpg` exists
-- [ ] Code pushed to Git (main/production branch)
-- [ ] All 9 required env vars ready (see below)
+- [ ] Staff routes require login (`/admin`, `/pos`, `/kitchen`, `/delivery`)
+- [ ] Public self-order rate-limited (`POST /api/self-order`)
+- [ ] Security headers present (HSTS, X-Frame-Options, nosniff)
+- [ ] No secrets in client bundle or public settings API
+- [ ] Platform admin tenant selection enforced
 
----
+## POS workflow
 
-## Vercel
+- [ ] Login → `/pos` loads order list
+- [ ] SSE live updates (or polling fallback) refresh orders
+- [ ] Order status update from drawer works
+- [ ] Quick Sale opens, adds products, updates customer display
+- [ ] Print receipt / kitchen ticket (browser print)
+- [ ] Offline badge appears when network disabled; status syncs on reconnect
 
-- [ ] Project imported (Next.js, Node 20+)
-- [ ] Production env vars set in Vercel
-- [ ] First deploy succeeded
-- [ ] `npx prisma migrate deploy` run on production DB
-- [ ] `npx tsx scripts/ensure-admin.ts` run
-- [ ] Custom domain added + DNS configured
-- [ ] `NEXT_PUBLIC_APP_URL=https://www.ellstorpskrog.se` set + redeployed
-- [ ] SSL active on domain
+## Kitchen workflow
 
----
+- [ ] `/kitchen` shows NEW / COOKING / READY columns
+- [ ] `/kitchen?kds=2` drag-and-drop updates status
+- [ ] Station filter `?screen=pizza` filters items
+- [ ] Sound alert on new orders (if enabled)
 
-## PostgreSQL
+## QR self-order
 
-- [ ] Production database provisioned (Neon / Vercel Postgres / Supabase)
-- [ ] `DATABASE_URL` uses SSL + pooled connection
-- [ ] Migrations applied (`prisma migrate deploy`)
-- [ ] Admin user bootstrapped
-- [ ] `/api/health` → database `ok`
+- [ ] `/order?table=5&qr=1` loads menu without login
+- [ ] Guest can submit order to kitchen
+- [ ] Order tracking works with phone last 4 digits
+- [ ] Kitchen receives realtime `NewOrder`
 
----
+## Delivery
 
-## Domain & DNS
+- [ ] `/delivery` shows delivery orders in queue
+- [ ] Driver assignment persists (localStorage per device)
+- [ ] Status transitions update queue
 
-- [ ] `CNAME` `www` → Vercel
-- [ ] `A` record `@` → Vercel (or apex redirect)
-- [ ] HTTPS works, no certificate warnings
-- [ ] `/sitemap.xml` shows production URLs
-- [ ] Apex redirects to `www` (optional)
+## Customer display
 
----
+- [ ] `/customer-display` on second screen/monitor
+- [ ] POS Quick Sale updates items and total
+- [ ] Thank-you screen after sale completes
 
-## Stripe (live)
+## Reports & operations
 
-- [ ] Live API keys in Vercel (`STRIPE_LIVE_*` or `STRIPE_*`)
-- [ ] Webhook endpoint: `https://www.ellstorpskrog.se/api/webhooks/stripe`
-- [ ] Events: `checkout.session.completed`, `payment_intent.succeeded`, `payment_intent.payment_failed`
-- [ ] Live webhook secret set in env
-- [ ] `/admin/payments` — test mode **OFF**, card payments **ON**
-- [ ] Test payment (test mode) → webhook 200 → order PAID
-- [ ] One live payment verified (then refund if desired)
+- [ ] `/admin/reports` X/Z/daily close loads
+- [ ] CSV and PDF export download
+- [ ] Cash reconciliation variance calculates
+- [ ] `/admin/backup` lists backups; manual backup runs (if `pg_dump` available)
+- [ ] `/admin/monitoring` shows health + memory + SSE count
+- [ ] `/admin/audit` shows recent actions
 
----
+## Multi-terminal & printing
 
-## Resend
+- [ ] Terminal heartbeat visible at `/admin/terminals`
+- [ ] Printer roles configured at `/admin/restaurant`
+- [ ] Failed prints show toast + retry queue
 
-- [ ] Domain `ellstorpskrog.se` added in Resend
-- [ ] DNS records verified (SPF, DKIM, MX)
-- [ ] `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `CONTACT_TO_EMAIL` set
-- [ ] Restaurant notification email in `/admin/settings`
-- [ ] Test emails sent from `/admin/notifications/test`
-- [ ] Live cash order → customer + restaurant emails received
+## Realtime
 
----
+- [ ] SSE reconnects after network blip (badge shows Återansluter → hidden)
+- [ ] Polling fallback active when SSE unavailable
 
-## Environment variables (Production)
+## Quality gates (CI / pre-deploy)
 
-| Variable | Set |
-|----------|-----|
-| `DATABASE_URL` | ☐ |
-| `AUTH_SECRET` (≥32 chars) | ☐ |
-| `NEXT_PUBLIC_APP_URL` | ☐ |
-| `STRIPE_SECRET_KEY` or `STRIPE_LIVE_SECRET_KEY` | ☐ |
-| `STRIPE_PUBLISHABLE_KEY` or `STRIPE_LIVE_PUBLISHABLE_KEY` | ☐ |
-| `STRIPE_WEBHOOK_SECRET` or `STRIPE_LIVE_WEBHOOK_SECRET` | ☐ |
-| `RESEND_API_KEY` | ☐ |
-| `RESEND_FROM_EMAIL` | ☐ |
-| `CONTACT_TO_EMAIL` | ☐ |
+```bash
+npm run typecheck
+npm run lint
+npm run test
+npm run build
+```
 
-Validate: `npm run check:env` → all required keys `SET`
+All must pass with zero TypeScript errors and zero ESLint errors.
 
----
+## Post-launch smoke (first hour)
 
-## First production tests
-
-### Auth
-- [ ] Login at `/login` → `/admin`
-- [ ] Admin password changed from default
-- [ ] Logout works; `/admin` blocked when logged out
-
-### Orders
-- [ ] Cash order → appears in `/admin/orders`
-- [ ] Status update triggers emails
-- [ ] Card order → Stripe → PAID → emails
-
-### Content
-- [ ] Menu loads products
-- [ ] Admin CRUD (products, categories) persists
-- [ ] Image upload works
-
-### SEO & PWA
-- [ ] `/robots.txt`, `/sitemap.xml`, `/manifest.webmanifest` → 200
-- [ ] OG image on social share debugger
-- [ ] Security headers (HSTS, X-Frame-Options)
-
-### System
-- [ ] `/admin/system` ≥ **80%** overall
-- [ ] **0 launch blockers**
-- [ ] Uptime monitor on `/api/health`
-
----
-
-## Go live
-
-- [ ] Stripe live mode confirmed (not test)
-- [ ] All checklist items above complete
-- [ ] Restaurant owner notified
-- [ ] Rollback plan understood (see `DEPLOYMENT_GUIDE.md` §8)
-
----
-
-## Rollback (if needed)
-
-- [ ] **Code:** Vercel → Deployments → Promote previous deployment
-- [ ] **Env:** Revert variables → redeploy
-- [ ] **Payments:** Disable card payments in `/admin/payments`
-- [ ] **Email:** Disable toggles in `/admin/notifications`
-- [ ] **Database:** Restore provider snapshot (never `migrate reset`)
-
----
-
-*See `DEPLOYMENT_GUIDE.md` for step-by-step instructions.*
+- [ ] Place test self-order from phone
+- [ ] Advance order through kitchen on `/kitchen`
+- [ ] Complete or cancel from `/pos`
+- [ ] Verify audit log entry for status change
+- [ ] Check `/api/health` returns healthy

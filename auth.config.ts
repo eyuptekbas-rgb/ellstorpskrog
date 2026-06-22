@@ -1,7 +1,11 @@
 import type { NextAuthConfig } from "next-auth";
 
+const authSecret =
+  process.env.AUTH_SECRET?.trim() ||
+  process.env.NEXTAUTH_SECRET?.trim();
+
 export const authConfig = {
-  secret: process.env.AUTH_SECRET,
+  secret: authSecret,
   pages: {
     signIn: "/login",
   },
@@ -16,6 +20,7 @@ export const authConfig = {
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        token.tenantId = user.tenantId ?? null;
       }
       return token;
     },
@@ -23,6 +28,7 @@ export const authConfig = {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
+        session.user.tenantId = (token.tenantId as string | null) ?? null;
       }
       return session;
     },

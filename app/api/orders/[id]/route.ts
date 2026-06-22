@@ -1,22 +1,19 @@
 import { NextResponse } from "next/server";
 import { OrderStatus } from "@prisma/client";
 import { updateOrderStatus } from "@/lib/orders/update-status";
+import { findTenantOrder } from "@/lib/tenant/scope";
 import { prisma } from "@/lib/prisma";
+import { getAdminTenantId, tenantApiError } from "@/lib/tenant/admin-api";
 
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const tenantId = await getAdminTenantId();
     const { id } = await params;
 
-    const order = await prisma.order.findUnique({
-      where: { id },
-      include: {
-        items: true,
-        statusHistory: { orderBy: { createdAt: "desc" } },
-      },
-    });
+    const order = await findTenantOrder(id, tenantId);
 
     if (!order) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
@@ -24,6 +21,8 @@ export async function GET(
 
     return NextResponse.json(order);
   } catch (error) {
+    const apiError = tenantApiError(error);
+    if (apiError) return apiError;
     console.error("GET /api/orders/[id] error:", error);
     return NextResponse.json(
       { error: "Failed to fetch order" },
@@ -37,6 +36,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const tenantId = await getAdminTenantId();
     const { id } = await params;
     const body = await req.json();
     const { status, adminNote } = body as {
@@ -49,7 +49,7 @@ export async function PATCH(
         return NextResponse.json({ error: "Invalid status" }, { status: 400 });
       }
 
-      const result = await updateOrderStatus(id, status);
+      const result = await updateOrderStatus(id, status, tenantId);
       if (!result) {
         return NextResponse.json({ error: "Order not found" }, { status: 404 });
       }
@@ -58,7 +58,7 @@ export async function PATCH(
     }
 
     if (adminNote !== undefined) {
-      const existing = await prisma.order.findUnique({ where: { id } });
+      const existing = await findTenantOrder(id, tenantId);
       if (!existing) {
         return NextResponse.json({ error: "Order not found" }, { status: 404 });
       }
@@ -77,6 +77,8 @@ export async function PATCH(
 
     return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
   } catch (error) {
+    const apiError = tenantApiError(error);
+    if (apiError) return apiError;
     console.error("PATCH /api/orders/[id] error:", error);
     return NextResponse.json(
       { error: "Failed to update order" },

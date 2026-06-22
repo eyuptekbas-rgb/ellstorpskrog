@@ -1,0 +1,39 @@
+/* ZQ-P108B 15" POS terminal — landscape-only, touch-first, kiosk mode */
+
+html.pos-terminal-mode,
+html.pos-terminal-mode body {
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html.pos-terminal-mode input,
+html.pos-terminal-mode textarea,
+html.pos-terminal-mode [contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.pos-portrait-blocker {
+  display: none;
+}
+
+@media (orientation: portrait) and (max-width: 900px) {
+  html.pos-terminal-mode .pos-portrait-blocker {
+    display: flex;
+  }
+
+  html.pos-terminal-mode .pos-terminal-app {
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+.pos-terminal-app[data-pos-profile="zq-p108b"],
+.pos-terminal-app[data-pos-profile="generic-pos"] {
+  touch-action: manipulation;
+}

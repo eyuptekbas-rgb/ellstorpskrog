@@ -16,7 +16,15 @@ import SystemStatusCard, {
   StatusRow,
 } from "@/components/admin/SystemStatusCard";
 import type { SystemStatus } from "@/lib/system/status";
+import type { HardwareDiagnostics } from "@/lib/system/hardware-diagnostics";
 import type { SetupCheckItem } from "@/lib/system/readiness";
+import HardwareDiagnosticsPanel, {
+  OperationsPanel,
+} from "@/components/admin/system/HardwareDiagnosticsPanel";
+
+type SystemPageData = SystemStatus & {
+  hardware?: HardwareDiagnostics;
+};
 
 const ENV_STATUS_LABEL: Record<string, string> = {
   set: "Satt",
@@ -81,7 +89,7 @@ function SetupChecklistSection({
 }
 
 export default function AdminSystemPage() {
-  const [data, setData] = useState<SystemStatus | null>(null);
+  const [data, setData] = useState<SystemPageData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -116,8 +124,7 @@ export default function AdminSystemPage() {
           </p>
           <h1 className="mt-1 font-serif text-3xl text-white">Produktionsstatus</h1>
           <p className="mt-2 max-w-2xl text-sm text-white/50">
-            Översikt av databas, betalningar, e-post, autentisering och miljövariabler inför
-            Vercel-deploy.
+            Översikt av databas, hårdvara, terminaler, realtime och miljövariabler.
           </p>
         </div>
         <button
@@ -197,6 +204,9 @@ export default function AdminSystemPage() {
           </p>
         )}
       </section>
+
+      <HardwareDiagnosticsPanel hardware={data?.hardware ?? null} loading={loading} />
+      <OperationsPanel />
 
       {/* Core services */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

@@ -45,7 +45,7 @@ export default function TrustBadges() {
             <p className="text-[11px] font-semibold leading-tight text-white/90 sm:text-xs">
               {title}
             </p>
-            <p className="mt-1 text-[10px] leading-snug text-white/38">
+            <p className="mt-1 text-[10px] leading-snug text-white/55">
               {description}
             </p>
           </div>

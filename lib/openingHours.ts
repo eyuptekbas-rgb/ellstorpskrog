@@ -1,7 +1,7 @@
 import type { OpeningHours } from "@prisma/client";
 
 /** dayOfWeek: 0 = Sunday … 6 = Saturday (matches JS Date.getDay()) */
-export const DEFAULT_OPENING_HOURS: Omit<OpeningHours, "id">[] = [
+export const DEFAULT_OPENING_HOURS: Omit<OpeningHours, "id" | "tenantId">[] = [
   { dayOfWeek: 0, openTime: "13:00", closeTime: "21:00", isClosed: false },
   { dayOfWeek: 1, openTime: "13:00", closeTime: "21:00", isClosed: false },
   { dayOfWeek: 2, openTime: "13:00", closeTime: "22:00", isClosed: false },

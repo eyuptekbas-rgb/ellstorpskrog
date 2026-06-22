@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   CalendarDays,
   Check,
@@ -186,7 +186,7 @@ export default function ReservationModal({ open, onClose }: Props) {
   const [success, setSuccess] = useState(false);
 
   const minDate = toLocalDateString(new Date());
-  const dateOptions = useMemo(() => getReservationDateOptions(8), [open]);
+  const dateOptions = useMemo(() => getReservationDateOptions(8), []);
   const timeSlots = useMemo(
     () => (date ? getReservationTimeSlots(date) : []),
     [date]
@@ -209,6 +209,20 @@ export default function ReservationModal({ open, onClose }: Props) {
     }
   }, [step, date, time, guestCount, name, phone, email]);
 
+  const resetAndClose = useCallback(() => {
+    setName("");
+    setPhone("");
+    setEmail("");
+    setDate("");
+    setTime("");
+    setGuestCount(2);
+    setComment("");
+    setError("");
+    setSuccess(false);
+    setStep(1);
+    onClose();
+  }, [onClose]);
+
   useEffect(() => {
     if (!open) return;
 
@@ -223,7 +237,7 @@ export default function ReservationModal({ open, onClose }: Props) {
       document.body.style.overflow = "";
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [open]);
+  }, [open, resetAndClose]);
 
   useEffect(() => {
     if (!open) {
@@ -238,20 +252,6 @@ export default function ReservationModal({ open, onClose }: Props) {
       setTime("");
     }
   }, [date, time, timeSlots]);
-
-  function resetAndClose() {
-    setName("");
-    setPhone("");
-    setEmail("");
-    setDate("");
-    setTime("");
-    setGuestCount(2);
-    setComment("");
-    setError("");
-    setSuccess(false);
-    setStep(1);
-    onClose();
-  }
 
   async function handleSubmit() {
     setLoading(true);
@@ -782,7 +782,7 @@ export default function ReservationModal({ open, onClose }: Props) {
         {!success && (
           <div className="shrink-0 px-4 pt-2 lg:hidden">
             <div className="mb-2 flex gap-1">
-              {RESERVATION_STEPS.map(({ id, label }) => (
+              {RESERVATION_STEPS.map(({ id }) => (
                 <div
                   key={id}
                   className={`h-1 flex-1 rounded-full transition-colors ${

@@ -3,23 +3,40 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { Phone, ShoppingBag } from "lucide-react";
 import BrandLogo from "@/components/brand/BrandLogo";
-import MobileAppHeader from "@/components/header/MobileAppHeader";
+import HeaderActions from "@/components/header/HeaderActions";
+import HeaderStatusChips from "@/components/header/HeaderStatusChips";
+import ConceptMobileHeaderRouter from "@/components/concepts/headers/ConceptMobileHeaderRouter";
 import { useReservation } from "@/components/ReservationProvider";
+import { useTenantBrandingOptional } from "@/components/tenant/TenantBrandingProvider";
 import { loadCart } from "@/lib/cart";
 import { NAV_LINKS, SITE_PHONE_HREF } from "@/lib/navigation";
+import { phoneHref } from "@/lib/settings/utils";
+import { stripTenantPrefix, withTenantPath } from "@/lib/tenant/public-path";
 
 export default function Header() {
   const pathname = usePathname();
+  const logicalPath = stripTenantPrefix(pathname);
   const { openReservation } = useReservation();
   const [scrolled, setScrolled] = useState(false);
   const [cartCount, setCartCount] = useState(0);
+  const [cartTotal, setCartTotal] = useState(0);
   const [isOpen, setIsOpen] = useState<boolean | null>(null);
+  const isMenuPage = logicalPath === "/menu";
+
+  const branding = useTenantBrandingOptional();
+  const restaurantName = branding?.restaurantName ?? "Ellstorps Krog";
+  const phoneLink = branding?.phone ? phoneHref(branding.phone) : SITE_PHONE_HREF;
+  const homeHref = withTenantPath(pathname, "/");
+  const menuHref = withTenantPath(pathname, "/menu");
+  const checkoutHref = withTenantPath(pathname, "/checkout");
 
   const refreshCartCount = useCallback(() => {
     const cart = loadCart();
     setCartCount(cart.reduce((sum, item) => sum + item.quantity, 0));
+    setCartTotal(
+      cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
+    );
   }, []);
 
   useEffect(() => {
@@ -30,7 +47,7 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
-    refreshCartCount();
+    queueMicrotask(() => refreshCartCount());
     window.addEventListener("cart-updated", refreshCartCount);
     window.addEventListener("storage", refreshCartCount);
     return () => {
@@ -41,7 +58,6 @@ export default function Header() {
 
   useEffect(() => {
     let cancelled = false;
-
     fetch("/api/settings/public")
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
@@ -50,28 +66,17 @@ export default function Header() {
         }
       })
       .catch(() => {});
-
     return () => {
       cancelled = true;
     };
   }, []);
 
-  const statusMeta = isOpen !== null && (
-    <span className="site-header-brand-meta">
-      <span className="site-header-brand-sub">Malmö</span>
-      <span
-        className={`site-header-status ${isOpen ? "site-header-status--open" : "site-header-status--closed"}`}
-      >
-        <span className="site-header-status-dot" aria-hidden />
-        {isOpen ? "Öppet nu" : "Stängt"}
-      </span>
-    </span>
-  );
-
   return (
     <>
-      <MobileAppHeader
+      <ConceptMobileHeaderRouter
         cartCount={cartCount}
+        cartTotal={cartTotal}
+        isMenuPage={isMenuPage}
         isOpen={isOpen}
         scrolled={scrolled}
       />
@@ -82,23 +87,23 @@ export default function Header() {
         }`}
       >
         <div className="site-header-inner mx-auto max-w-7xl px-[var(--content-px)]">
-          <div className="grid h-full grid-cols-[1fr_auto_1fr] items-center gap-4">
-            <div className="site-header-brand-stack justify-self-start">
-              <BrandLogo size="header-desktop" priority />
-              {statusMeta}
-            </div>
+          <div className="site-header-grid">
+            <Link href={homeHref} className="site-header-brand-link">
+              <BrandLogo size="header-desktop" priority href={undefined} />
+              <span className="site-header-brand-copy">
+                <span className="site-header-brand-name">{restaurantName}</span>
+                <HeaderStatusChips isOpen={isOpen} />
+              </span>
+            </Link>
 
-            <nav
-              className="flex items-center justify-center gap-1"
-              aria-label="Huvudnavigation"
-            >
+            <nav className="site-header-nav" aria-label="Huvudnavigation">
               {NAV_LINKS.map(({ href, label, match }) => {
-                const active = match(pathname);
+                const active = match(logicalPath);
                 return (
                   <Link
                     key={href}
-                    href={href}
-                    className={`site-nav-link px-4 py-2 ${active ? "site-nav-link--active" : ""}`}
+                    href={withTenantPath(pathname, href)}
+                    className={`site-nav-link px-3 py-2 xl:px-4 ${active ? "site-nav-link--active" : ""}`}
                   >
                     {label}
                   </Link>
@@ -107,22 +112,22 @@ export default function Header() {
               <button
                 type="button"
                 onClick={openReservation}
-                className="site-nav-link px-4 py-2"
+                className="site-nav-link px-3 py-2 xl:px-4"
               >
                 Boka bord
               </button>
             </nav>
 
-            <div className="flex items-center justify-end gap-2.5">
-              <a
-                href={SITE_PHONE_HREF}
-                className="site-header-icon-btn"
-                aria-label="Ring oss"
-              >
-                <Phone size={18} strokeWidth={1.75} />
-              </a>
-              <Link href="/menu" className="btn-primary btn-sm !px-5">
-                <ShoppingBag size={16} />
+            <div className="site-header-end">
+              <HeaderActions
+                phoneHref={phoneLink}
+                cartHref={cartCount > 0 ? checkoutHref : menuHref}
+                cartCount={cartCount}
+                cartTotal={cartTotal}
+                isMenuPage={isMenuPage}
+                variant="desktop"
+              />
+              <Link href={menuHref} className="btn-primary btn-sm site-header-order-btn">
                 Beställ
               </Link>
             </div>

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { PaymentStatus } from "@prisma/client";
 import { getStripeClient } from "@/lib/stripe/client";
 import {
   findOrderByStripeSession,
@@ -14,15 +15,23 @@ export async function GET(req: Request) {
   }
 
   try {
+    const stripe = await getStripeClient();
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    if (session.payment_status !== "paid") {
+      return NextResponse.json(
+        { error: "Payment not completed" },
+        { status: 402 }
+      );
+    }
+
     let order = await findOrderByStripeSession(sessionId);
 
     if (!order) {
-      const stripe = await getStripeClient();
-      const session = await stripe.checkout.sessions.retrieve(sessionId);
       const orderId =
         session.metadata?.orderId || session.client_reference_id;
 
-      if (orderId && session.payment_status === "paid") {
+      if (orderId) {
         order = await markOrderPaid(orderId, {
           stripeSessionId: session.id,
           paymentIntentId:
@@ -33,7 +42,7 @@ export async function GET(req: Request) {
       }
     }
 
-    if (!order) {
+    if (!order || order.paymentStatus !== PaymentStatus.PAID) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 

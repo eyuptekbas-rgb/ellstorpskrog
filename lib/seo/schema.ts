@@ -1,5 +1,6 @@
-import type { OpeningHours, SiteSettings } from "@prisma/client";
+import type { OpeningHours } from "@prisma/client";
 import type { MenuCategory } from "@/lib/menu";
+import type { PublicSiteSettings } from "@/lib/settings/sanitize";
 import { DAY_NAMES } from "@/lib/settings/utils";
 import { absoluteUrl, resolveImageUrl } from "@/lib/seo/url";
 
@@ -42,7 +43,7 @@ function openingHoursSpecification(hours: OpeningHours[]) {
 }
 
 export function buildRestaurantSchema(
-  settings: SiteSettings,
+  settings: PublicSiteSettings,
   openingHours: OpeningHours[]
 ) {
   const url = absoluteUrl("/");
@@ -70,7 +71,7 @@ export function buildRestaurantSchema(
 }
 
 export function buildLocalBusinessSchema(
-  settings: SiteSettings,
+  settings: PublicSiteSettings,
   openingHours: OpeningHours[]
 ) {
   const url = absoluteUrl("/");
@@ -96,7 +97,7 @@ export function buildLocalBusinessSchema(
 }
 
 export function buildHomeSchemaGraph(
-  settings: SiteSettings,
+  settings: PublicSiteSettings,
   openingHours: OpeningHours[]
 ) {
   return {
@@ -109,7 +110,7 @@ export function buildHomeSchemaGraph(
 }
 
 export function buildMenuSchema(
-  settings: SiteSettings,
+  settings: PublicSiteSettings,
   categories: MenuCategory[]
 ) {
   const url = absoluteUrl("/menu");
@@ -143,7 +144,7 @@ export function buildMenuSchema(
 }
 
 export function buildMenuPageSchemaGraph(
-  settings: SiteSettings,
+  settings: PublicSiteSettings,
   openingHours: OpeningHours[],
   categories: MenuCategory[]
 ) {

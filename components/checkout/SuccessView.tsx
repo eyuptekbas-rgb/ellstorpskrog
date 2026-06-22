@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Home, Receipt } from "lucide-react";
+import { useTenantPublicPath } from "@/components/tenant/TenantPublicPathProvider";
 import LoadingSpinner from "./LoadingSpinner";
 import TrustBadges from "./TrustBadges";
 
@@ -18,6 +21,8 @@ export default function SuccessView({
   total,
   cashOrder,
 }: Props) {
+  const tp = useTenantPublicPath();
+
   if (loading) {
     return (
       <div className="space-y-8">
@@ -38,7 +43,7 @@ export default function SuccessView({
           <p className="mt-2 text-sm text-white/55">{error}</p>
         </div>
         <Link
-          href="/checkout"
+          href={tp("/checkout")}
           className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#b85c38] py-4 font-semibold text-white transition hover:bg-[#a04f30]"
         >
           Tillbaka till kassan
@@ -79,17 +84,17 @@ export default function SuccessView({
                 <Receipt size={20} />
               </div>
               <div>
-                <p className="text-xs text-white/40">Ordernummer</p>
+                <p className="text-xs text-white/55">Ordernummer</p>
                 <p className="font-semibold text-[#e8c4a8]">{orderNumber}</p>
               </div>
             </div>
           )}
           {total > 0 && (
             <div className="flex items-center justify-between border-t border-white/6 pt-4">
-              <span className="text-sm text-white/50">Totalt betalt</span>
+              <span className="text-sm text-white/55">Totalt betalt</span>
               <span className="font-serif text-2xl text-white">
                 {total}
-                <span className="text-sm font-sans text-white/40 ml-1">kr</span>
+                <span className="text-sm font-sans text-white/55 ml-1">kr</span>
               </span>
             </div>
           )}
@@ -99,16 +104,25 @@ export default function SuccessView({
       <TrustBadges />
 
       <div className="space-y-3">
+        {orderNumber && (
+          <Link
+            href={tp(`/faktura?orderNumber=${encodeURIComponent(orderNumber)}`)}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 py-4 font-semibold text-white transition hover:bg-white/10"
+          >
+            <Receipt size={18} />
+            Visa faktura
+          </Link>
+        )}
         <Link
-          href="/menu"
+          href={tp("/menu")}
           className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#b85c38] py-4 font-semibold text-white transition hover:bg-[#a04f30]"
         >
           <Home size={18} />
           Beställ mer
         </Link>
         <Link
-          href="/"
-          className="inline-flex w-full items-center justify-center py-3 text-sm text-white/45 transition hover:text-white"
+          href={tp("/")}
+          className="inline-flex w-full items-center justify-center py-3 text-sm text-white/55 transition hover:text-white"
         >
           Till startsidan
         </Link>

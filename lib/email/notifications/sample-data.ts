@@ -17,6 +17,7 @@ export function buildSampleOrder(
   const now = new Date();
   return {
     id: "sample-order-id",
+    tenantId: settings.tenantId,
     orderNumber: "EK-TEST001",
     userId: null,
     customerName: overrides?.customerName ?? "Test Kund",
@@ -29,6 +30,7 @@ export function buildSampleOrder(
     status: OrderStatus.CONFIRMED,
     note: "Testbeställning — inga allergier",
     total: 234,
+    estimatedReadyMinutes: null,
     stripeSessionId: null,
     paymentIntentId: null,
     adminNote: null,

@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight, Clock } from "lucide-react";
+import { useTenantPublicPath } from "@/components/tenant/TenantPublicPathProvider";
 import { OPENING_HOURS_DISPLAY } from "@/lib/openingHours";
 
 type Props = {
@@ -7,6 +10,7 @@ type Props = {
 };
 
 export default function HomeOpeningHours({ isOpen }: Props) {
+  const tp = useTenantPublicPath();
   return (
     <section className="px-[var(--content-px)] py-[var(--section-py-mobile)] lg:py-[var(--section-py)]">
       <div className="mx-auto max-w-6xl">
@@ -35,7 +39,7 @@ export default function HomeOpeningHours({ isOpen }: Props) {
               </div>
 
               <Link
-                href="/kontakt"
+                href={tp("/kontakt")}
                 className="mt-6 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#b85c38] transition hover:text-[#d4a574]"
               >
                 Kontakta oss

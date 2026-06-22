@@ -3,6 +3,7 @@ import { NotificationType } from "@prisma/client";
 import { sendOrderNotification } from "@/lib/email/notify";
 import { isEmailConfigured } from "@/lib/email/resend";
 import { prisma } from "@/lib/prisma";
+import { getAdminTenantId, tenantApiError } from "@/lib/tenant/admin-api";
 
 type SendBody = {
   orderId: string;
@@ -20,6 +21,7 @@ export async function POST(req: Request) {
       );
     }
 
+    const tenantId = await getAdminTenantId();
     const body: SendBody = await req.json();
     const { orderId, type, recipient, force } = body;
 
@@ -30,8 +32,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const order = await prisma.order.findUnique({
-      where: { id: orderId },
+    const order = await prisma.order.findFirst({
+      where: { id: orderId, tenantId },
       include: { items: true },
     });
 
@@ -46,6 +48,8 @@ export async function POST(req: Request) {
 
     return NextResponse.json(result);
   } catch (error) {
+    const apiError = tenantApiError(error);
+    if (apiError) return apiError;
     console.error("POST /api/notifications/send error:", error);
     return NextResponse.json(
       { error: "Failed to send notification" },

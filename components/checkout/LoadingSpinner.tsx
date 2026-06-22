@@ -14,7 +14,7 @@ export default function LoadingSpinner({ label, size = "md" }: Props) {
         role="status"
         aria-label={label ?? "Laddar"}
       />
-      {label && <p className="text-sm text-white/50">{label}</p>}
+      {label && <p className="text-sm text-white/55">{label}</p>}
     </div>
   );
 }

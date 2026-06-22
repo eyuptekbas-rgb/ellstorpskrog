@@ -1,7 +1,7 @@
 {
-  "name": "Ellstorps Krog",
-  "short_name": "Ellstorps",
-  "description": "Beställ mat online, se menyn och kontakta Ellstorps Krog i Malmö.",
+  "name": "EllstorpsKrog",
+  "short_name": "EllstorpsKrog",
+  "description": "Beställ mat online, se menyn och kontakta EllstorpsKrog i Malmö.",
   "id": "/",
   "start_url": "/",
   "scope": "/",
@@ -45,7 +45,7 @@
       "sizes": "1170x2532",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Ellstorps Krog — mobil"
+      "label": "EllstorpsKrog — mobil"
     }
   ],
   "shortcuts": [

@@ -20,7 +20,7 @@ const STEPS = [
   },
   {
     title: "Lägg till",
-    body: 'Tryck "Lägg till" — appen visas som Ellstorps Krog.',
+    body: 'Tryck "Lägg till" — appen visas som EllstorpsKrog.',
   },
 ];
 
@@ -73,7 +73,7 @@ export default function IosInstallGuide({ open, onClose }: Props) {
               className="h-16 w-16 shrink-0 object-contain"
             />
             <div>
-              <p className="font-semibold text-white">Ellstorps Krog</p>
+              <p className="font-semibold text-white">EllstorpsKrog</p>
               <p className="mt-1 text-xs leading-relaxed text-white/50">
                 Snabb beställning direkt från hemskärmen — utan App Store.
               </p>

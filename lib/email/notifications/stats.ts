@@ -27,10 +27,11 @@ export type EmailDeliveryStats = {
   }>;
 };
 
-export async function getEmailDeliveryStats(): Promise<EmailDeliveryStats> {
+export async function getEmailDeliveryStats(tenantId: string): Promise<EmailDeliveryStats> {
   const now = new Date();
   const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
   const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const tenantFilter = { order: { tenantId } };
 
   const [
     total,
@@ -46,27 +47,56 @@ export async function getEmailDeliveryStats(): Promise<EmailDeliveryStats> {
     last7Failed,
     typeGroups,
   ] = await Promise.all([
-    prisma.notificationLog.count(),
-    prisma.notificationLog.count({ where: { status: NotificationDeliveryStatus.SENT } }),
-    prisma.notificationLog.count({ where: { status: NotificationDeliveryStatus.FAILED } }),
-    prisma.notificationLog.count({ where: { status: NotificationDeliveryStatus.SKIPPED } }),
-    prisma.notificationLog.count({ where: { status: NotificationDeliveryStatus.PENDING } }),
-    prisma.notificationLog.count({ where: { createdAt: { gte: dayAgo } } }),
+    prisma.notificationLog.count({ where: tenantFilter }),
     prisma.notificationLog.count({
-      where: { createdAt: { gte: dayAgo }, status: NotificationDeliveryStatus.SENT },
+      where: { ...tenantFilter, status: NotificationDeliveryStatus.SENT },
     }),
     prisma.notificationLog.count({
-      where: { createdAt: { gte: dayAgo }, status: NotificationDeliveryStatus.FAILED },
-    }),
-    prisma.notificationLog.count({ where: { createdAt: { gte: weekAgo } } }),
-    prisma.notificationLog.count({
-      where: { createdAt: { gte: weekAgo }, status: NotificationDeliveryStatus.SENT },
+      where: { ...tenantFilter, status: NotificationDeliveryStatus.FAILED },
     }),
     prisma.notificationLog.count({
-      where: { createdAt: { gte: weekAgo }, status: NotificationDeliveryStatus.FAILED },
+      where: { ...tenantFilter, status: NotificationDeliveryStatus.SKIPPED },
+    }),
+    prisma.notificationLog.count({
+      where: { ...tenantFilter, status: NotificationDeliveryStatus.PENDING },
+    }),
+    prisma.notificationLog.count({
+      where: { ...tenantFilter, createdAt: { gte: dayAgo } },
+    }),
+    prisma.notificationLog.count({
+      where: {
+        ...tenantFilter,
+        createdAt: { gte: dayAgo },
+        status: NotificationDeliveryStatus.SENT,
+      },
+    }),
+    prisma.notificationLog.count({
+      where: {
+        ...tenantFilter,
+        createdAt: { gte: dayAgo },
+        status: NotificationDeliveryStatus.FAILED,
+      },
+    }),
+    prisma.notificationLog.count({
+      where: { ...tenantFilter, createdAt: { gte: weekAgo } },
+    }),
+    prisma.notificationLog.count({
+      where: {
+        ...tenantFilter,
+        createdAt: { gte: weekAgo },
+        status: NotificationDeliveryStatus.SENT,
+      },
+    }),
+    prisma.notificationLog.count({
+      where: {
+        ...tenantFilter,
+        createdAt: { gte: weekAgo },
+        status: NotificationDeliveryStatus.FAILED,
+      },
     }),
     prisma.notificationLog.groupBy({
       by: ["type", "status"],
+      where: tenantFilter,
       _count: { status: true },
     }),
   ]);

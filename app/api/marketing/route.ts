@@ -2,10 +2,12 @@ import { NextResponse } from "next/server";
 import { buildMarketingAdminConfig } from "@/lib/marketing/config";
 import { ensureSiteSettings } from "@/lib/settings";
 import { prisma } from "@/lib/prisma";
+import { getAdminTenantId } from "@/lib/tenant/admin-api";
 
 export async function GET() {
   try {
-    const settings = await ensureSiteSettings();
+    const tenantId = await getAdminTenantId();
+    const settings = await ensureSiteSettings(tenantId);
     const config = buildMarketingAdminConfig(settings);
     return NextResponse.json({
       googleAnalyticsId: config.googleAnalyticsId,
@@ -40,11 +42,12 @@ type UpdateMarketingBody = {
 
 export async function PATCH(req: Request) {
   try {
-    await ensureSiteSettings();
+    const tenantId = await getAdminTenantId();
+    await ensureSiteSettings(tenantId);
     const body: UpdateMarketingBody = await req.json();
 
     const settings = await prisma.siteSettings.update({
-      where: { id: 1 },
+      where: { tenantId },
       data: {
         ...(body.googleAnalyticsId !== undefined && {
           googleAnalyticsId: body.googleAnalyticsId?.trim() || null,

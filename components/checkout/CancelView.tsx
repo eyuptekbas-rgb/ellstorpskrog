@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, ShoppingBag } from "lucide-react";
+import { useTenantPublicPath } from "@/components/tenant/TenantPublicPathProvider";
 import TrustBadges from "./TrustBadges";
 
 type Props = {
@@ -7,6 +10,8 @@ type Props = {
 };
 
 export default function CancelView({ orderId }: Props) {
+  const tp = useTenantPublicPath();
+
   return (
     <div className="space-y-8">
       <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-amber-500/10 ring-2 ring-amber-500/25">
@@ -43,15 +48,15 @@ export default function CancelView({ orderId }: Props) {
 
       <div className="space-y-3">
         <Link
-          href="/checkout"
+          href={tp("/checkout")}
           className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#b85c38] py-4 font-semibold text-white transition hover:bg-[#a04f30]"
         >
           <ArrowRight size={18} />
           Tillbaka till kassan
         </Link>
         <Link
-          href="/menu"
-          className="inline-flex w-full items-center justify-center gap-2 py-3 text-sm text-white/45 transition hover:text-white"
+          href={tp("/menu")}
+          className="inline-flex w-full items-center justify-center gap-2 py-3 text-sm text-white/55 transition hover:text-white"
         >
           <ArrowLeft size={16} />
           Till menyn

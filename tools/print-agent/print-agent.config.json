@@ -1,0 +1,11 @@
+{
+  "host": "127.0.0.1",
+  "port": 9211,
+  "defaultPrinter": "",
+  "receiptPrinter": "",
+  "kitchenPrinter": "",
+  "autoDetectPrinter": true,
+  "maxRetries": 3,
+  "retryDelayMs": 1500,
+  "logLevel": "info"
+}

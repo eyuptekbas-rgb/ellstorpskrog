@@ -30,7 +30,7 @@ export default function GlobalError({
           <button
             type="button"
             onClick={() => reset()}
-            className="rounded-2xl bg-[#b85c38] px-6 py-3 text-sm font-semibold text-white"
+            className="rounded-2xl bg-[#b85c38] px-6 py-3 text-sm font-semibold text-white rms-focus"
           >
             Försök igen
           </button>

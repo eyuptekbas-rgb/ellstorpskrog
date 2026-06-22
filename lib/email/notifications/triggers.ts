@@ -22,6 +22,24 @@ async function sendToCustomer(
   });
 }
 
+/** POS wait-time confirmation — sent when staff confirms NEW → CONFIRMED with minutes. */
+export async function notifyCustomerEstimatedReady(
+  order: OrderWithItems
+): Promise<void> {
+  if (!order.estimatedReadyMinutes) return;
+
+  try {
+    const settings = await ensureSiteSettings();
+    await sendToCustomer(
+      order,
+      NotificationType.CUSTOMER_ORDER_CONFIRMATION,
+      settings
+    );
+  } catch (error) {
+    console.error("notifyCustomerEstimatedReady error:", error);
+  }
+}
+
 async function sendToRestaurant(
   order: OrderWithItems,
   type: NotificationType,

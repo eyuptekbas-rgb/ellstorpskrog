@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Check, X } from "lucide-react";
+import { useTenantPublicPath } from "@/components/tenant/TenantPublicPathProvider";
 import CheckoutLoadingSkeleton from "@/components/checkout/CheckoutLoadingSkeleton";
 import { FormInput, FormTextarea } from "@/components/checkout/FormField";
 import OrderSummary from "@/components/checkout/OrderSummary";
@@ -14,8 +15,8 @@ import PaymentMethodSelector, {
 } from "@/components/checkout/PaymentMethodSelector";
 import StickyTotalBar from "@/components/checkout/StickyTotalBar";
 import TrustBadges from "@/components/checkout/TrustBadges";
-import { CartItem, loadCart } from "@/lib/cart";
-import { matchDeliveryZone } from "@/lib/settings/utils";
+import { CartItem, formatOrderItemName, loadCart, loadOrderNote, saveOrderNote } from "@/lib/cart";
+import { extractPostalCode, matchDeliveryZone } from "@/lib/settings/utils";
 import type { DeliveryZone, SiteSettings } from "@prisma/client";
 
 const FORM_ID = "checkout-form";
@@ -28,6 +29,7 @@ type PublicSettingsResponse = {
 };
 
 export default function CheckoutClient() {
+  const tp = useTenantPublicPath();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartLoaded, setCartLoaded] = useState(false);
   const [settings, setSettings] = useState<SiteSettings | null>(null);
@@ -40,14 +42,65 @@ export default function CheckoutClient() {
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
   const [orderType, setOrderType] = useState<OrderType>("afhentning");
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("kort");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("afhentning");
   const [orderNote, setOrderNote] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const errorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setCart(loadCart());
+    setOrderNote(loadOrderNote());
     setCartLoaded(true);
+  }, []);
+
+  // Critical fix 1: whenever a submit error appears, bring it into view and move
+  // keyboard focus to it (it is also announced via role="alert"/aria-live).
+  useEffect(() => {
+    if (error && errorRef.current) {
+      errorRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+      errorRef.current.focus();
+    }
+  }, [error]);
+
+  // H3: prefill contact fields for logged-in customers. The /api/account/profile
+  // endpoint returns 401 for guests (ignored). Each field is only filled when it
+  // is still empty, so values the user has already typed are never overwritten.
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/account/profile")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (cancelled || !data?.profile) return;
+        const p = data.profile as {
+          firstName?: string | null;
+          lastName?: string | null;
+          email?: string | null;
+          phone?: string | null;
+          address?: string | null;
+          postalCode?: string | null;
+          city?: string | null;
+        };
+        const fullName = [p.firstName, p.lastName]
+          .filter(Boolean)
+          .join(" ")
+          .trim();
+        const composedAddress = [
+          p.address,
+          [p.postalCode, p.city].filter(Boolean).join(" ").trim(),
+        ]
+          .filter(Boolean)
+          .join(", ");
+
+        if (fullName) setName((cur) => cur || fullName);
+        if (p.phone) setPhone((cur) => cur || p.phone || "");
+        if (p.email) setEmail((cur) => cur || p.email || "");
+        if (composedAddress) setAddress((cur) => cur || composedAddress);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -65,9 +118,9 @@ export default function CheckoutClient() {
             setOrderType("levering");
           }
           if (!data.stripeCardEnabled) {
-            setPaymentMethod(
-              data.settings.pickupEnabled ? "afhentning" : "levering_betalning"
-            );
+            setPaymentMethod("afhentning");
+          } else {
+            setPaymentMethod("kort");
           }
         }
       })
@@ -75,11 +128,12 @@ export default function CheckoutClient() {
   }, []);
 
   useEffect(() => {
-    if (orderType === "afhentning" && paymentMethod === "levering_betalning") {
-      setPaymentMethod(stripeCardEnabled ? "kort" : "afhentning");
+    if (orderType === "levering") {
+      if (stripeCardEnabled) setPaymentMethod("kort");
+      return;
     }
-    if (orderType === "levering" && paymentMethod === "afhentning") {
-      setPaymentMethod(stripeCardEnabled ? "kort" : "levering_betalning");
+    if (paymentMethod === "kort" && !stripeCardEnabled) {
+      setPaymentMethod("afhentning");
     }
   }, [orderType, paymentMethod, stripeCardEnabled]);
 
@@ -114,6 +168,19 @@ export default function CheckoutClient() {
   const pickupEnabled = settings?.pickupEnabled ?? true;
   const deliveryEnabled = settings?.deliveryEnabled ?? true;
 
+  // H4: delivery coverage feedback. Only meaningful for delivery orders once a
+  // postal code is detectable in the address. With configured zones, coverage
+  // depends on a zone match; without zones the restaurant delivers everywhere.
+  const addressPostal = extractPostalCode(address);
+  const showDeliveryCoverage =
+    orderType === "levering" && Boolean(addressPostal);
+  const deliveryAvailable =
+    deliveryZones.length > 0 ? Boolean(deliveryMatch.zone) : true;
+
+  useEffect(() => {
+    saveOrderNote(orderNote);
+  }, [orderNote]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -121,6 +188,12 @@ export default function CheckoutClient() {
 
     if (minimumOrder > 0 && subtotal < minimumOrder) {
       setError(`Minsta order är ${minimumOrder} kr (exkl. leveransavgift).`);
+      setLoading(false);
+      return;
+    }
+
+    if (orderType === "levering" && deliveryZones.length > 0 && !deliveryAvailable) {
+      setError("Adressen ligger utanför vårt leveransområde.");
       setLoading(false);
       return;
     }
@@ -133,18 +206,24 @@ export default function CheckoutClient() {
       orderType,
       note: orderNote || undefined,
       total: totalPrice,
+      subtotal,
       deliveryFee,
       items: cart.map((item) => ({
         productId: item.id,
-        productName: item.name,
+        productName: formatOrderItemName(item),
         quantity: item.quantity,
         price: item.price,
+        selectedOptionIds: item.selectedOptions.map((o) => o.id),
       })),
     };
 
     try {
       if (paymentMethod === "kort") {
-        const res = await fetch("/api/checkout/create-session", {
+        if (!stripeCardEnabled) {
+          throw new Error("Online payment not available");
+        }
+
+        const res = await fetch("/api/payments/create", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -157,6 +236,10 @@ export default function CheckoutClient() {
 
         const { url } = await res.json();
         if (!url) throw new Error("No checkout URL");
+        sessionStorage.setItem(
+          "faktura_customer_email",
+          email.trim().toLowerCase()
+        );
         window.location.href = url;
         return;
       }
@@ -166,14 +249,21 @@ export default function CheckoutClient() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...payload,
-          paymentMethod,
+          paymentMethod: "afhentning",
         }),
       });
 
       if (!res.ok) throw new Error("Failed to submit order");
 
       const order = await res.json();
-      window.location.href = `/checkout/success?order_number=${encodeURIComponent(order.orderNumber)}&total=${totalPrice}&cash=1`;
+      sessionStorage.setItem(
+        "faktura_customer_email",
+        email.trim().toLowerCase()
+      );
+
+      window.location.href = tp(
+        `/checkout/success?order_id=${encodeURIComponent(order.id)}&cash=1`
+      );
     } catch (err) {
       setError(
         err instanceof Error
@@ -185,16 +275,31 @@ export default function CheckoutClient() {
     }
   };
 
+  const deliveryNeedsOnline = orderType === "levering" && !stripeCardEnabled;
+  const pickupPaymentUnavailable =
+    orderType === "afhentning" && !stripeCardEnabled && paymentMethod === "kort";
+
   const submitDisabled =
     loading ||
+    deliveryNeedsOnline ||
+    pickupPaymentUnavailable ||
     (!pickupEnabled && !deliveryEnabled) ||
-    belowMinimum;
+    belowMinimum ||
+    (orderType === "levering" && deliveryZones.length > 0 && !deliveryAvailable);
+
+  const disabledReason = deliveryNeedsOnline
+    ? "Leverans kräver onlinebetalning som inte är aktiverad just nu."
+    : !pickupEnabled && !deliveryEnabled
+    ? "Avhämtning och leverans är inte tillgängligt just nu."
+    : belowMinimum
+      ? `Minsta order är ${minimumOrder} kr — du har ${subtotal} kr.`
+      : null;
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white pb-44">
       <div className="mx-auto max-w-lg px-[var(--content-px)] pt-5 sm:pt-8">
         <Link
-          href="/menu"
+          href={tp("/menu")}
           className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white/55 transition hover:border-white/18 hover:text-white"
         >
           <ArrowLeft size={16} />
@@ -221,7 +326,7 @@ export default function CheckoutClient() {
               <p className="text-xs font-semibold text-white/85">
                 Säker checkout
               </p>
-              <p className="text-[11px] text-white/42">
+              <p className="text-[11px] text-white/55">
                 Krypterad betalning via Stripe
               </p>
             </div>
@@ -229,7 +334,7 @@ export default function CheckoutClient() {
 
           <p className="section-label mb-3">Steg 3 av 3</p>
           <h1 className="text-display text-3xl text-white sm:text-4xl">Kassa</h1>
-          <p className="text-body mt-3 text-sm text-white/48">
+          <p className="text-body mt-3 text-sm text-white/55">
             Granska din order och slutför betalningen
           </p>
 
@@ -249,9 +354,9 @@ export default function CheckoutClient() {
           <CheckoutLoadingSkeleton />
         ) : cart.length === 0 ? (
           <div className="rounded-3xl border border-white/8 bg-[#1a1a1a] p-10 text-center">
-            <p className="text-white/50 mb-5">Din varukorg är tom</p>
+            <p className="text-white/55 mb-5">Din varukorg är tom</p>
             <Link
-              href="/menu"
+              href={tp("/menu")}
               className="inline-flex items-center justify-center rounded-2xl bg-[#b85c38] px-8 py-3.5 font-semibold text-white transition hover:bg-[#a04f30]"
             >
               Gå till menyn
@@ -265,7 +370,13 @@ export default function CheckoutClient() {
               className="space-y-8 pb-4"
             >
               {error && (
-                <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                <div
+                  ref={errorRef}
+                  role="alert"
+                  aria-live="assertive"
+                  tabIndex={-1}
+                  className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300 focus:outline-none"
+                >
                   {error}
                 </div>
               )}
@@ -290,7 +401,7 @@ export default function CheckoutClient() {
               <section className="card-premium rounded-[var(--radius-card)] p-6 space-y-5">
                 <div>
                   <h2 className="font-serif text-xl text-white">Dina uppgifter</h2>
-                  <p className="mt-1 text-sm text-white/45">
+                  <p className="mt-1 text-sm text-white/55">
                     Vi behöver dina kontaktuppgifter för orderbekräftelse
                   </p>
                 </div>
@@ -334,6 +445,31 @@ export default function CheckoutClient() {
                       : "Valfritt vid avhämtning"
                   }
                 />
+
+                {showDeliveryCoverage && (
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    className={`flex items-center gap-2 rounded-xl border px-3.5 py-2.5 text-xs ${
+                      deliveryAvailable
+                        ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-300"
+                        : "border-amber-500/20 bg-amber-500/10 text-amber-200"
+                    }`}
+                  >
+                    {deliveryAvailable ? (
+                      <Check size={14} strokeWidth={2.5} aria-hidden />
+                    ) : (
+                      <X size={14} strokeWidth={2.5} aria-hidden />
+                    )}
+                    <span>
+                      {deliveryAvailable
+                        ? deliveryMatch.zone
+                          ? `Leverans tillgänglig (${deliveryMatch.zone.name})`
+                          : "Leverans tillgänglig till din adress"
+                        : "Din adress ligger utanför vårt leveransområde"}
+                    </span>
+                  </div>
+                )}
               </section>
 
               <div className="card-premium rounded-[var(--radius-card)] p-5">
@@ -356,12 +492,12 @@ export default function CheckoutClient() {
 
               <section className="card-premium rounded-[var(--radius-card)] p-5">
                 <FormTextarea
-                  label="Ordernote"
-                  placeholder="Särskilda önskemål, allergier eller leveransinstruktioner…"
+                  label="Kommentar till beställningen"
+                  placeholder="Allergier, leveransinstruktioner eller andra önskemål…"
                   value={orderNote}
                   onChange={(e) => setOrderNote(e.target.value)}
                   rows={3}
-                  hint="Valfritt"
+                  hint="Valfritt — synlig för köket och vid leverans"
                 />
               </section>
 
@@ -374,6 +510,7 @@ export default function CheckoutClient() {
               disabled={submitDisabled}
               paymentMethod={paymentMethod}
               formId={FORM_ID}
+              disabledReason={disabledReason}
             />
           </>
         )}

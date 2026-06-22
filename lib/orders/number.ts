@@ -4,9 +4,11 @@ export async function generateOrderNumber(
   tx: Omit<
     PrismaClient,
     "$connect" | "$disconnect" | "$on" | "$transaction" | "$extends"
-  >
+  >,
+  tenantId: string
 ): Promise<string> {
   const last = await tx.order.findFirst({
+    where: { tenantId },
     orderBy: { orderNumber: "desc" },
     select: { orderNumber: true },
   });

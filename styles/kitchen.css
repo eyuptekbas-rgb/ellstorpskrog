@@ -1,0 +1,20 @@
+.kitchen-root {
+  touch-action: manipulation;
+  overscroll-behavior: none;
+}
+
+.kitchen-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+html:has(.kitchen-root),
+body:has(.kitchen-root) {
+  overflow: hidden;
+  height: 100%;
+}
+
+.kitchen-action-btn {
+  touch-action: manipulation;
+}

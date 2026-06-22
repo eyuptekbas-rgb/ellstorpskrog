@@ -12,9 +12,17 @@ export type ProcessedProductImage = {
   thumbnailUrl: string;
 };
 
+export type ImageCropRect = {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+};
+
 export async function processProductImage(
   buffer: Buffer,
-  fileId: string
+  fileId: string,
+  crop?: ImageCropRect
 ): Promise<ProcessedProductImage> {
   await ensureProductUploadDir();
 
@@ -24,7 +32,32 @@ export async function processProductImage(
   const mainPath = path.join(dir, mainFilename);
   const thumbPath = path.join(dir, thumbFilename);
 
-  const base = sharp(buffer).rotate();
+  let base = sharp(buffer).rotate();
+
+  if (
+    crop &&
+    crop.width > 0 &&
+    crop.height > 0 &&
+    Number.isFinite(crop.left) &&
+    Number.isFinite(crop.top)
+  ) {
+    const metadata = await base.metadata();
+    const imgWidth = metadata.width ?? 0;
+    const imgHeight = metadata.height ?? 0;
+    if (imgWidth > 0 && imgHeight > 0) {
+      const left = Math.max(0, Math.min(Math.round(crop.left), imgWidth - 1));
+      const top = Math.max(0, Math.min(Math.round(crop.top), imgHeight - 1));
+      const width = Math.max(
+        1,
+        Math.min(Math.round(crop.width), imgWidth - left)
+      );
+      const height = Math.max(
+        1,
+        Math.min(Math.round(crop.height), imgHeight - top)
+      );
+      base = base.extract({ left, top, width, height });
+    }
+  }
 
   const [mainBuffer, thumbBuffer] = await Promise.all([
     base
@@ -32,8 +65,8 @@ export async function processProductImage(
       .resize({ width: MAIN_IMAGE_MAX_WIDTH, withoutEnlargement: true })
       .webp({ quality: 82 })
       .toBuffer(),
-    sharp(buffer)
-      .rotate()
+    base
+      .clone()
       .resize({ width: THUMB_IMAGE_MAX_WIDTH, withoutEnlargement: true })
       .webp({ quality: 78 })
       .toBuffer(),

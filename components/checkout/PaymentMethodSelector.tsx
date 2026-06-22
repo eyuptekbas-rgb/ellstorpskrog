@@ -1,7 +1,10 @@
-import { Banknote, Check, CreditCard, Truck } from "lucide-react";
+"use client";
+
+import { useRef } from "react";
+import { Banknote, Check, CreditCard } from "lucide-react";
 import type { OrderType } from "./OrderTypeSelector";
 
-export type PaymentMethod = "kort" | "afhentning" | "levering_betalning";
+export type PaymentMethod = "kort" | "afhentning";
 
 type Props = {
   paymentMethod: PaymentMethod;
@@ -16,25 +19,21 @@ export default function PaymentMethodSelector({
   stripeCardEnabled,
   onChange,
 }: Props) {
+  const optionRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
   const options = [
     stripeCardEnabled && {
       value: "kort" as const,
       icon: CreditCard,
       title: "Kortbetalning",
       description: "Visa, Mastercard, Apple Pay via Stripe",
-      badge: "Rekommenderas",
+      badge: orderType === "levering" ? "Krävs" : "Rekommenderas",
     },
     orderType === "afhentning" && {
       value: "afhentning" as const,
       icon: Banknote,
       title: "Betal vid avhämtning",
       description: "Kontant eller kort i restaurangen",
-    },
-    orderType === "levering" && {
-      value: "levering_betalning" as const,
-      icon: Truck,
-      title: "Betal vid leverans",
-      description: "Betala när maten anländer",
     },
   ].filter(Boolean) as Array<{
     value: PaymentMethod;
@@ -44,20 +43,70 @@ export default function PaymentMethodSelector({
     badge?: string;
   }>;
 
+  const selectedIndex = options.findIndex((o) => o.value === paymentMethod);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const count = options.length;
+    if (count === 0) return;
+    const base = selectedIndex < 0 ? 0 : selectedIndex;
+    let next = -1;
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (base + 1) % count;
+    else if (e.key === "ArrowLeft" || e.key === "ArrowUp")
+      next = (base - 1 + count) % count;
+    else if (e.key === "Home") next = 0;
+    else if (e.key === "End") next = count - 1;
+    else return;
+    e.preventDefault();
+    onChange(options[next].value);
+    optionRefs.current[next]?.focus();
+  };
+
+  if (options.length === 0) {
+    return (
+      <section className="space-y-3">
+        <div>
+          <h2 className="font-serif text-xl text-white">Betalningsmetod</h2>
+          <p className="mt-1 text-sm text-amber-200/90">
+            {orderType === "levering"
+              ? "Leverans kräver onlinebetalning som inte är aktiverad just nu."
+              : "Ingen betalningsmetod är tillgänglig just nu."}
+          </p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="space-y-3">
       <div>
-        <h2 className="font-serif text-xl text-white">Betalningsmetod</h2>
-        <p className="mt-1 text-sm text-white/45">Välj hur du vill betala</p>
+        <h2 id="payment-method-heading" className="font-serif text-xl text-white">
+          Betalningsmetod
+        </h2>
+        <p className="mt-1 text-sm text-white/55">
+          {orderType === "levering"
+            ? "Leverans betalas online innan beställningen skickas"
+            : "Välj hur du vill betala"}
+        </p>
       </div>
 
-      <div className="space-y-2.5">
-        {options.map(({ value, icon: Icon, title, description, badge }) => {
+      <div
+        role="radiogroup"
+        aria-labelledby="payment-method-heading"
+        onKeyDown={handleKeyDown}
+        className="space-y-2.5"
+      >
+        {options.map(({ value, icon: Icon, title, description, badge }, index) => {
           const selected = paymentMethod === value;
           return (
             <button
               key={value}
+              ref={(el) => {
+                optionRefs.current[index] = el;
+              }}
               type="button"
+              role="radio"
+              aria-checked={selected}
+              tabIndex={selected ? 0 : -1}
               onClick={() => onChange(value)}
               className={`relative flex w-full items-center gap-4 rounded-2xl border p-4 text-left transition ${
                 selected
@@ -81,7 +130,7 @@ export default function PaymentMethodSelector({
                     </span>
                   )}
                 </div>
-                <span className="text-xs text-white/45">{description}</span>
+                <span className="text-xs text-white/55">{description}</span>
               </div>
               <div
                 className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition ${

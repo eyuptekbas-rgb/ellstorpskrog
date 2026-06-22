@@ -10,6 +10,7 @@ export function slugify(text: string): string {
 
 export async function uniqueCategorySlug(
   name: string,
+  tenantId: string,
   excludeId?: string
 ): Promise<string> {
   const { prisma } = await import("@/lib/prisma");
@@ -18,7 +19,9 @@ export async function uniqueCategorySlug(
   let counter = 1;
 
   while (true) {
-    const existing = await prisma.category.findUnique({ where: { slug } });
+    const existing = await prisma.category.findUnique({
+      where: { tenantId_slug: { tenantId, slug } },
+    });
     if (!existing || existing.id === excludeId) return slug;
     slug = `${base}-${counter++}`;
   }

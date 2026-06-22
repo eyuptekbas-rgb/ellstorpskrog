@@ -33,7 +33,7 @@ export default function InstallAppButton({
       ) : (
         <>
           <Smartphone size={18} />
-          Installera App
+          Installera EllstorpsKrog App
         </>
       )}
     </button>

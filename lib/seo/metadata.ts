@@ -85,8 +85,8 @@ export async function generateSiteMetadata(
   return buildMetadataFromSettings(settings, overrides);
 }
 
-export async function getSeoSettings() {
-  const settings = await ensureSiteSettings();
+export async function getSeoSettings(tenantId?: string) {
+  const settings = await ensureSiteSettings(tenantId);
   return {
     metaTitle: settings.metaTitle ?? "",
     metaDescription: settings.metaDescription ?? "",

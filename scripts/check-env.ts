@@ -42,6 +42,10 @@ const keys = [
   "RESEND_API_KEY",
   "RESEND_FROM_EMAIL",
   "CONTACT_TO_EMAIL",
+  "CRON_SECRET",
+  "ORDINA_BILLING_COMPANY",
+  "ORDINA_BILLING_EMAIL",
+  "ORDINA_BILLING_VAT_RATE",
 ] as const;
 
 let hasIssue = false;

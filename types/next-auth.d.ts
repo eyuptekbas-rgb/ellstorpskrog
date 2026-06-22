@@ -5,11 +5,14 @@ declare module "next-auth" {
     user: {
       id: string;
       role: string;
+      tenantId: string | null;
     } & DefaultSession["user"];
+    blocked?: boolean;
   }
 
   interface User {
     role: string;
+    tenantId?: string | null;
   }
 }
 
@@ -17,5 +20,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     id?: string;
     role?: string;
+    tenantId?: string | null;
+    blocked?: boolean;
   }
 }

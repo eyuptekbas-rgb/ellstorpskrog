@@ -1,8 +1,7 @@
 import Link from "next/link";
 import {
-  FolderOpen,
+  Monitor,
   Package,
-  Settings,
   ShoppingBag,
   type LucideIcon,
 } from "lucide-react";
@@ -14,28 +13,22 @@ const actions: {
   icon: LucideIcon;
 }[] = [
   {
-    href: "/admin/products",
-    label: "Produkter",
-    description: "Meny & priser",
-    icon: Package,
-  },
-  {
-    href: "/admin/categories",
-    label: "Kategorier",
-    description: "Menystruktur",
-    icon: FolderOpen,
+    href: "/admin/kitchen",
+    label: "Köksdisplay",
+    description: "KDS i fullskärm",
+    icon: Monitor,
   },
   {
     href: "/admin/orders",
     label: "Beställningar",
-    description: "Alla ordrar",
+    description: "Hantera ordrar",
     icon: ShoppingBag,
   },
   {
-    href: "/admin/settings",
-    label: "Inställningar",
-    description: "Restauranginfo",
-    icon: Settings,
+    href: "/admin/menu",
+    label: "Menyhantering",
+    description: "Produkter & kategorier",
+    icon: Package,
   },
 ];
 
@@ -47,7 +40,7 @@ export default function QuickActions() {
         <p className="mt-0.5 text-sm text-white/45">Vanliga adminuppgifter</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {actions.map(({ href, label, description, icon: Icon }) => (
           <Link
             key={href}

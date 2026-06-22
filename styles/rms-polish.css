@@ -1,0 +1,81 @@
+/* Phase 6 — RMS launch polish: focus, motion, touch */
+
+.rms-focus:focus-visible {
+  outline: 2px solid #d4a574;
+  outline-offset: 2px;
+}
+
+.rms-skip-link:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rms-animate-in,
+  .kitchen-root *,
+  .pos-root * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.rms-animate-in {
+  animation: rms-fade-in 0.25s ease-out;
+}
+
+@keyframes rms-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rms-touch-target {
+  min-height: 2.75rem;
+  min-width: 2.75rem;
+}
+
+.rms-panel {
+  border-radius: 1.5rem;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  background: rgb(20 20 20 / 0.92);
+}
+
+.rms-status-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.rms-status-live::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: #34d399;
+  animation: rms-pulse 2s ease-in-out infinite;
+}
+
+.rms-status-live[data-state="reconnecting"]::before {
+  background: #f59e0b;
+}
+
+.rms-status-live[data-state="offline"]::before {
+  background: #ef4444;
+  animation: none;
+}
+
+@keyframes rms-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}

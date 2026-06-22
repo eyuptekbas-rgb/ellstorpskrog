@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Print Agent Diagnostics</title>
+  <style>
+    :root { font-family: Segoe UI, system-ui, sans-serif; color: #111; background: #f4f4f5; }
+    body { margin: 0; padding: 24px; }
+    .card { max-width: 960px; margin: 0 auto; background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+    h1 { margin: 0 0 8px; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: .95rem; }
+    th, td { border-bottom: 1px solid #eee; padding: 8px; text-align: left; vertical-align: top; }
+    th { background: #fafafa; }
+    .ok { color: #166534; font-weight: 600; }
+    .bad { color: #991b1b; font-weight: 600; }
+    button { margin: 4px 6px 4px 0; padding: 8px 12px; border: 0; border-radius: 8px; cursor: pointer; background: #1d4ed8; color: #fff; font: inherit; }
+    button.secondary { background: #e5e7eb; color: #111; }
+    pre { background: #111; color: #eee; padding: 12px; border-radius: 8px; overflow: auto; font-size: .85rem; }
+    a { color: #1d4ed8; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Diagnostik</h1>
+    <p><a href="/">← Tillbaka till konfiguration</a></p>
+    <div id="summary">Laddar…</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Skrivare</th>
+          <th>Driver</th>
+          <th>Port</th>
+          <th>Status</th>
+          <th>ESC/POS</th>
+          <th>Test</th>
+        </tr>
+      </thead>
+      <tbody id="printers"></tbody>
+    </table>
+    <h2>Agent</h2>
+    <pre id="agent"></pre>
+    <button id="refresh">Uppdatera</button>
+    <button class="secondary" id="runAll">Kör alla tester (vald kvitto)</button>
+  </div>
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    async function api(path, opts) {
+      const res = await fetch(path, opts);
+      return res.json();
+    }
+
+    function badge(ok, yes, no) {
+      return `<span class="${ok ? "ok" : "bad"}">${ok ? yes : no}</span>`;
+    }
+
+    async function testPrinter(name, kind) {
+      const path = kind === "open"
+        ? "/v1/test/open-printer"
+        : kind === "escpos"
+          ? "/v1/test/escpos"
+          : "/v1/test/receipt";
+      const body = JSON.stringify({ printer: name });
+      return api(path, { method: "POST", headers: { "Content-Type": "application/json" }, body });
+    }
+
+    async function render() {
+      const [printersRes, statusRes, diagRes] = await Promise.all([
+        api("/v1/printers"),
+        api("/v1/status"),
+        api("/v1/diagnostics"),
+      ]);
+
+      $("agent").textContent = JSON.stringify({ status: statusRes, diagnostics: diagRes }, null, 2);
+
+      const selected = printersRes.selected?.receipt || printersRes.selected?.default || "—";
+      $("summary").innerHTML =
+        `Vald kvitto: <strong>${selected}</strong> · ` +
+        `OpenPrinter: ${badge(diagRes.openPrinter?.success, "OK", "FAIL")} · ` +
+        `ESC/POS: ${badge(diagRes.escpos?.success, "OK", "FAIL")}`;
+
+      const tbody = $("printers");
+      tbody.innerHTML = "";
+      for (const p of printersRes.printers || []) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${p.name}${p.isDefault ? " (default)" : ""}</td>
+          <td>${p.driverName || "—"}</td>
+          <td>${p.portName || "—"}</td>
+          <td>${p.status}${p.workOffline ? " · offline" : ""}</td>
+          <td>${p.escposCapable ? "Ja" : "Nej"}</td>
+          <td class="actions"></td>`;
+        const actions = tr.querySelector(".actions");
+        for (const [label, kind] of [["OpenPrinter", "open"], ["ESC/POS", "escpos"], ["Print", "print"]]) {
+          const btn = document.createElement("button");
+          btn.textContent = label;
+          btn.className = "secondary";
+          btn.onclick = async () => {
+            btn.disabled = true;
+            try {
+              const r = await testPrinter(p.name, kind);
+              alert(r.success ? label + " OK" : (r.error || "Failed"));
+            } catch (e) {
+              alert(String(e));
+            } finally {
+              btn.disabled = false;
+            }
+          };
+          actions.appendChild(btn);
+        }
+        tbody.appendChild(tr);
+      }
+    }
+
+    $("refresh").onclick = () => render().catch((e) => alert(e));
+    $("runAll").onclick = async () => {
+      const d = await api("/v1/diagnostics");
+      const name = d.printer;
+      if (!name) return alert("Ingen skrivare vald.");
+      const open = await testPrinter(name, "open");
+      const esc = await testPrinter(name, "escpos");
+      alert(`OpenPrinter: ${open.success ? "OK" : open.error}\nESC/POS: ${esc.success ? "OK" : esc.error}`);
+      render();
+    };
+
+    render().catch((e) => { $("summary").textContent = String(e); });
+  </script>
+</body>
+</html>

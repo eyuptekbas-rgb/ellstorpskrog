@@ -16,11 +16,11 @@ export default function FloatingCartButton({
   if (totalItems === 0) return null;
 
   return (
-    <div className="fixed bottom-6 right-4 z-40 hidden flex-col items-end gap-2 sm:bottom-8 sm:right-6 sm:flex">
+    <div className="fixed bottom-[var(--menu-space-6)] right-[var(--menu-space-4)] z-[var(--menu-z-floating-cart)] hidden flex-col items-end gap-[var(--menu-space-2)] sm:bottom-[var(--menu-space-8)] sm:right-[var(--menu-space-6)] lg:flex">
       <button
         type="button"
         onClick={onCheckout}
-        className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-5 py-2.5 text-sm font-semibold text-white shadow-xl shadow-black/40 backdrop-blur-md transition hover:bg-white/10 active:scale-95"
+        className="inline-flex items-center gap-[var(--menu-space-2)] rounded-[var(--menu-radius-pill)] border border-[var(--menu-border-control)] bg-[var(--menu-control-glass)] px-[var(--menu-space-5)] py-[var(--menu-space-2-5)] text-sm font-semibold text-[var(--menu-text-primary)] shadow-[var(--menu-shadow-floating)] backdrop-blur-md transition hover:bg-[var(--menu-control-glass-hover)] active:scale-95"
       >
         Till kassan
         <ArrowRight size={16} />
@@ -30,15 +30,15 @@ export default function FloatingCartButton({
         type="button"
         onClick={onOpenCart}
         aria-label={`Varukorg, ${totalItems} artiklar`}
-        className="relative flex h-14 w-14 items-center justify-center rounded-full bg-[#b85c38] text-white shadow-xl shadow-[#b85c38]/40 transition hover:bg-[#a04f30] hover:scale-105 active:scale-95"
+        className="relative flex h-14 w-14 items-center justify-center rounded-[var(--menu-radius-pill)] bg-[var(--brand-copper)] text-[var(--menu-text-primary)] shadow-[var(--menu-shadow-floating-accent)] transition hover:scale-105 hover:bg-[var(--menu-color-primary-hover)] active:scale-95"
       >
         <ShoppingBag size={22} />
-        <span className="absolute -right-1 -top-1 flex h-6 min-w-6 items-center justify-center rounded-full bg-[#e8c4a8] px-1.5 text-xs font-bold text-[#0a0a0a]">
+        <span className="absolute -right-[var(--menu-space-1)] -top-[var(--menu-space-1)] flex h-6 min-w-6 items-center justify-center rounded-[var(--menu-radius-pill)] bg-[var(--brand-cream)] px-[var(--menu-space-1-5)] text-xs font-bold text-[var(--menu-color-page)]">
           {totalItems}
         </span>
       </button>
 
-      <p className="rounded-full border border-white/10 bg-black/70 px-3 py-1 text-xs font-medium text-white/80 backdrop-blur-md">
+      <p className="rounded-[var(--menu-radius-pill)] border border-[var(--menu-border-control)] bg-[var(--menu-overlay-soft)] px-[var(--menu-space-3)] py-[var(--menu-space-1)] text-xs font-medium text-[color-mix(in_srgb,var(--menu-color-white)_80%,transparent)] backdrop-blur-md">
         {totalPrice} kr
       </p>
     </div>

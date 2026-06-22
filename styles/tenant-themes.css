@@ -1,0 +1,140 @@
+/* Visual design concepts — same app structure, different skin per [data-template] */
+
+[data-template] .text-display {
+  font-family: var(--font-display);
+}
+
+[data-template] .card-premium {
+  border-radius: var(--radius-card);
+  box-shadow: var(--card-shadow);
+  background: color-mix(in srgb, var(--brand-surface) 92%, transparent);
+}
+
+[data-template] .btn-primary {
+  border-radius: var(--radius-btn);
+}
+
+[data-template] .section-label {
+  color: var(--brand-copper);
+}
+
+/* 1 Premium Scandinavian — light, airy */
+[data-template="premium-scandinavian"] .site-header {
+  background: color-mix(in srgb, var(--brand-surface) 95%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--brand-copper) 12%, transparent);
+}
+[data-template="premium-scandinavian"] .card-premium {
+  border: 1px solid color-mix(in srgb, var(--brand-copper) 10%, transparent);
+}
+[data-template="premium-scandinavian"] .site-nav-link--active {
+  color: var(--brand-copper-dark);
+}
+
+/* 2 Luxury Steakhouse */
+[data-template="luxury-steakhouse"] .text-display {
+  letter-spacing: 0.02em;
+  font-weight: 400;
+}
+[data-template="luxury-steakhouse"] .card-premium {
+  border: 1px solid color-mix(in srgb, var(--brand-gold) 22%, transparent);
+}
+[data-template="luxury-steakhouse"] .btn-primary {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.8125rem;
+}
+
+/* 3 Modern Nordic Bistro */
+[data-template="modern-nordic-bistro"] .card-premium {
+  border: 1px solid color-mix(in srgb, var(--brand-copper) 18%, transparent);
+}
+[data-template="modern-nordic-bistro"] .section-label {
+  letter-spacing: 0.2em;
+}
+
+/* 4 Dark Copper Premium — Ellstorps default */
+[data-template="dark-copper-premium"] .card-premium {
+  border: 1px solid color-mix(in srgb, var(--brand-copper) 14%, transparent);
+}
+
+/* 5 Italian Trattoria */
+[data-template="italian-trattoria"] .btn-primary {
+  font-weight: 700;
+}
+[data-template="italian-trattoria"] .card-premium {
+  border: 1px solid color-mix(in srgb, var(--brand-copper) 20%, transparent);
+}
+
+/* 6 Minimal Black & White */
+[data-template="minimal-black-white"] .card-premium {
+  border: 1px solid color-mix(in srgb, var(--foreground) 12%, transparent);
+  border-radius: 0;
+  background: transparent;
+}
+[data-template="minimal-black-white"] .btn-primary {
+  border-radius: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.75rem;
+}
+[data-template="minimal-black-white"] .text-display {
+  font-weight: 300;
+  letter-spacing: -0.02em;
+}
+
+/* 7 Elegant Fine Dining */
+[data-template="elegant-fine-dining"] .text-display {
+  font-weight: 300;
+  letter-spacing: 0.03em;
+}
+[data-template="elegant-fine-dining"] .card-premium {
+  border: 1px solid color-mix(in srgb, var(--brand-gold) 18%, transparent);
+}
+[data-template="elegant-fine-dining"] .section-label {
+  color: var(--brand-gold);
+}
+
+/* 8 Modern Food Delivery */
+[data-template="modern-food-delivery"] .btn-primary {
+  font-weight: 800;
+  box-shadow: 0 0 24px color-mix(in srgb, var(--brand-copper) 30%, transparent);
+}
+[data-template="modern-food-delivery"] .card-premium {
+  border: 1px solid color-mix(in srgb, var(--brand-copper) 25%, transparent);
+}
+[data-template="modern-food-delivery"] .site-bottom-nav-bar {
+  border-top: 2px solid var(--brand-copper);
+}
+
+/* 9 Rustic Gastro Pub */
+[data-template="rustic-gastro-pub"] .site-header {
+  border-bottom-width: 3px;
+}
+[data-template="rustic-gastro-pub"] .btn-primary {
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* 10 Premium App Store Style */
+[data-template="premium-app-store"] .card-premium {
+  border: 1px solid color-mix(in srgb, var(--brand-copper) 22%, transparent);
+  backdrop-filter: blur(12px);
+}
+[data-template="premium-app-store"] .btn-primary {
+  font-weight: 600;
+}
+[data-template="premium-app-store"] .site-bottom-nav-bar {
+  border-radius: 1.25rem 1.25rem 0 0;
+}
+
+/* Shared themed surfaces */
+[data-template] .menu-pro-header__title,
+[data-template] .menu-pro-section__title {
+  font-family: var(--font-display);
+}
+
+[data-template] .menu-product-row,
+[data-template] .menu-pro-section {
+  border-color: color-mix(in srgb, var(--foreground) 8%, transparent);
+}

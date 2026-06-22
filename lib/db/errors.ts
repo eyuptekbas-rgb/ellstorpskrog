@@ -72,7 +72,7 @@ export async function checkSiteSettingsTable(): Promise<{
 }> {
   try {
     const { prisma } = await import("@/lib/prisma");
-    await prisma.siteSettings.findUnique({ where: { id: 1 } });
+    await prisma.siteSettings.findFirst({ take: 1 });
     return { ok: true };
   } catch (error) {
     if (isPrismaConnectionError(error)) {

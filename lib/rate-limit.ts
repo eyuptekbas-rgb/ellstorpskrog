@@ -63,4 +63,21 @@ export const RATE_LIMITS: Record<string, number> = {
   "/api/reservations": 8,
   "/api/orders": 20,
   "/api/checkout/create-session": 15,
+  "/api/payments/create": 15,
+  "/api/faktura/lookup": 10,
+  "/api/auth": 30,
+  "/api/admin/terminals/heartbeat": 120,
+  "/api/realtime/stream": 30,
+  "/api/self-order": 20,
+  "/api/account/register": 10,
 };
+
+/** Staff mutation routes — per-IP limits per minute. */
+export const STAFF_MUTATION_RATE_LIMITS: Array<{
+  prefix: string;
+  limit: number;
+  methods: string[];
+}> = [
+  { prefix: "/api/admin/", limit: 120, methods: ["POST", "PUT", "PATCH", "DELETE"] },
+  { prefix: "/api/orders/", limit: 90, methods: ["PUT", "PATCH", "DELETE"] },
+];

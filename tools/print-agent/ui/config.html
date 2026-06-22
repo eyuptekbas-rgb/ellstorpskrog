@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ellstorps Print Agent</title>
+  <style>
+    :root { font-family: Segoe UI, system-ui, sans-serif; color: #111; background: #f4f4f5; }
+    body { margin: 0; padding: 24px; }
+    .card { max-width: 720px; margin: 0 auto; background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+    h1 { margin: 0 0 8px; font-size: 1.5rem; }
+    p.sub { margin: 0 0 20px; color: #555; }
+    label { display: block; font-weight: 600; margin: 14px 0 6px; }
+    select, button { font: inherit; }
+    select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+    button { padding: 10px 16px; border: 0; border-radius: 8px; cursor: pointer; background: #1d4ed8; color: #fff; }
+    button.secondary { background: #e5e7eb; color: #111; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    .status { margin-top: 16px; padding: 12px; border-radius: 8px; background: #f0fdf4; color: #166534; display: none; }
+    .status.error { background: #fef2f2; color: #991b1b; }
+    a { color: #1d4ed8; }
+    footer { margin-top: 20px; font-size: .9rem; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Ellstorps Print Agent</h1>
+    <p class="sub">Konfigurera skrivare på denna POS-terminal. Endast <code>127.0.0.1:9211</code>.</p>
+
+    <label for="receipt">Kvitto-skrivare</label>
+    <select id="receipt"></select>
+
+    <label for="kitchen">Köksskrivare</label>
+    <select id="kitchen"></select>
+
+    <label for="bar">Barskrivare</label>
+    <select id="bar"></select>
+
+    <label for="drawer">Kassalåda (via skrivare)</label>
+    <select id="drawer"></select>
+
+    <div class="row">
+      <button type="button" id="testReceipt">Test kvitto</button>
+      <button type="button" id="testKitchen">Test kök</button>
+      <button type="button" id="openDrawer">Öppna kassalåda</button>
+      <button type="button" id="save" class="secondary">Spara</button>
+    </div>
+
+    <div id="status" class="status"></div>
+    <footer><a href="/diagnostics">Diagnostik</a> · Agent <span id="version">—</span></footer>
+  </div>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const selects = ["receipt", "kitchen", "bar", "drawer"];
+
+    function showStatus(msg, isError) {
+      const el = $("status");
+      el.textContent = msg;
+      el.className = "status" + (isError ? " error" : "");
+      el.style.display = "block";
+    }
+
+    async function api(path, opts) {
+      const res = await fetch(path, opts);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || res.statusText);
+      return data;
+    }
+
+    function fillSelect(el, printers, value) {
+      el.innerHTML = "";
+      const empty = document.createElement("option");
+      empty.value = "";
+      empty.textContent = "(Auto-detect)";
+      el.appendChild(empty);
+      for (const p of printers) {
+        const opt = document.createElement("option");
+        opt.value = p.name;
+        opt.textContent = p.name + (p.escposCapable ? " · ESC/POS" : "");
+        el.appendChild(opt);
+      }
+      if (value) el.value = value;
+    }
+
+    async function load() {
+      const [printersRes, configRes, statusRes] = await Promise.all([
+        api("/v1/printers"),
+        api("/v1/config"),
+        api("/v1/status"),
+      ]);
+      $("version").textContent = statusRes.version || "1.0.0";
+      const cfg = configRes.config || {};
+      const printers = printersRes.printers || [];
+      fillSelect($("receipt"), printers, cfg.receiptPrinter);
+      fillSelect($("kitchen"), printers, cfg.kitchenPrinter);
+      fillSelect($("bar"), printers, cfg.barPrinter);
+      fillSelect($("drawer"), printers, cfg.drawerPrinter);
+    }
+
+    async function save() {
+      await api("/v1/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          receiptPrinter: $("receipt").value,
+          kitchenPrinter: $("kitchen").value,
+          barPrinter: $("bar").value,
+          drawerPrinter: $("drawer").value,
+        }),
+      });
+      showStatus("Inställningar sparade.");
+    }
+
+    $("save").onclick = () => save().catch((e) => showStatus(e.message, true));
+    $("testReceipt").onclick = () =>
+      api("/v1/test/receipt", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" })
+        .then((r) => showStatus("Test kvitto skickat till " + r.printer))
+        .catch((e) => showStatus(e.message, true));
+    $("testKitchen").onclick = () =>
+      api("/v1/test/kitchen", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" })
+        .then((r) => showStatus("Test kök skickat till " + r.printer))
+        .catch((e) => showStatus(e.message, true));
+    $("openDrawer").onclick = () =>
+      api("/v1/drawer/open", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" })
+        .then((r) => showStatus("Kassalåda öppnad via " + r.printer))
+        .catch((e) => showStatus(e.message, true));
+
+    load().catch((e) => showStatus("Kunde inte ladda: " + e.message, true));
+  </script>
+</body>
+</html>

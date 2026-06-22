@@ -53,12 +53,12 @@ export default function AdminPaymentsPage() {
       setForm({
         stripeEnabled: data.stripeEnabled,
         stripeTestMode: data.stripeTestMode,
-        stripePublishableKeyTest: data.stripePublishableKeyTest,
-        stripeSecretKeyTest: data.stripeSecretKeyTest,
-        stripeWebhookSecretTest: data.stripeWebhookSecretTest,
-        stripePublishableKeyLive: data.stripePublishableKeyLive,
-        stripeSecretKeyLive: data.stripeSecretKeyLive,
-        stripeWebhookSecretLive: data.stripeWebhookSecretLive,
+        stripePublishableKeyTest: data.stripePublishableKeyTest ?? "",
+        stripeSecretKeyTest: "",
+        stripeWebhookSecretTest: "",
+        stripePublishableKeyLive: data.stripePublishableKeyLive ?? "",
+        stripeSecretKeyLive: "",
+        stripeWebhookSecretLive: "",
       });
       setMeta({
         configured: data.configured,
@@ -97,12 +97,12 @@ export default function AdminPaymentsPage() {
       setForm({
         stripeEnabled: data.stripeEnabled,
         stripeTestMode: data.stripeTestMode,
-        stripePublishableKeyTest: data.stripePublishableKeyTest,
-        stripeSecretKeyTest: data.stripeSecretKeyTest,
-        stripeWebhookSecretTest: data.stripeWebhookSecretTest,
-        stripePublishableKeyLive: data.stripePublishableKeyLive,
-        stripeSecretKeyLive: data.stripeSecretKeyLive,
-        stripeWebhookSecretLive: data.stripeWebhookSecretLive,
+        stripePublishableKeyTest: data.stripePublishableKeyTest ?? "",
+        stripeSecretKeyTest: "",
+        stripeWebhookSecretTest: "",
+        stripePublishableKeyLive: data.stripePublishableKeyLive ?? "",
+        stripeSecretKeyLive: "",
+        stripeWebhookSecretLive: "",
       });
       setMeta({
         configured: data.configured,

@@ -3,6 +3,7 @@ import {
   retryAllFailedNotifications,
   retryFailedNotification,
 } from "@/lib/email/notifications/retry";
+import { getAdminTenantId, tenantApiError } from "@/lib/tenant/admin-api";
 
 type RetryBody = {
   logId?: string;
@@ -11,10 +12,11 @@ type RetryBody = {
 
 export async function POST(req: Request) {
   try {
+    const tenantId = await getAdminTenantId();
     const body: RetryBody = await req.json();
 
     if (body.retryAll) {
-      const results = await retryAllFailedNotifications();
+      const results = await retryAllFailedNotifications(tenantId);
       return NextResponse.json({ results });
     }
 
@@ -25,9 +27,11 @@ export async function POST(req: Request) {
       );
     }
 
-    const result = await retryFailedNotification(body.logId);
+    const result = await retryFailedNotification(body.logId, tenantId);
     return NextResponse.json(result);
   } catch (error) {
+    const apiError = tenantApiError(error);
+    if (apiError) return apiError;
     const message =
       error instanceof Error ? error.message : "Failed to retry notification";
     return NextResponse.json({ error: message }, { status: 400 });

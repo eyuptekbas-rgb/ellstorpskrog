@@ -32,10 +32,31 @@ function write(payload: LogPayload) {
   const line = JSON.stringify(payload);
   if (payload.level === "error") {
     console.error(line);
+    void sendAlert(payload);
   } else if (payload.level === "warn") {
     console.warn(line);
   } else {
     console.log(line);
+  }
+}
+
+async function sendAlert(payload: LogPayload) {
+  const url = process.env.ALERT_WEBHOOK_URL?.trim();
+  if (!url) return;
+
+  try {
+    await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text: `[${payload.level.toUpperCase()}] ${payload.message}`,
+        context: payload.context,
+        timestamp: payload.timestamp,
+        error: payload.error?.message,
+      }),
+    });
+  } catch {
+    // Never throw from alerting
   }
 }
 

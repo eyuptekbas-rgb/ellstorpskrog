@@ -9,6 +9,7 @@ import { getRestaurantNotificationEmail } from "@/lib/email/types";
 import { getFromAddress, isEmailConfigured } from "@/lib/email/resend";
 import { ensureSiteSettings } from "@/lib/settings";
 import { prisma } from "@/lib/prisma";
+import { getAdminTenantId } from "@/lib/tenant/admin-api";
 
 function serializeSettings(settings: Awaited<ReturnType<typeof ensureSiteSettings>>) {
   const toggles = Object.fromEntries(
@@ -45,7 +46,8 @@ function serializeSettings(settings: Awaited<ReturnType<typeof ensureSiteSetting
 
 export async function GET() {
   try {
-    const settings = await ensureSiteSettings();
+    const tenantId = await getAdminTenantId();
+    const settings = await ensureSiteSettings(tenantId);
     return NextResponse.json(serializeSettings(settings));
   } catch (error) {
     console.error("GET /api/notifications error:", error);
@@ -74,11 +76,12 @@ type UpdateNotificationsBody = {
 
 export async function PATCH(req: Request) {
   try {
-    await ensureSiteSettings();
+    const tenantId = await getAdminTenantId();
+    await ensureSiteSettings(tenantId);
     const body: UpdateNotificationsBody = await req.json();
 
     const settings = await prisma.siteSettings.update({
-      where: { id: 1 },
+      where: { tenantId },
       data: {
         ...(body.notificationEmail !== undefined && {
           notificationEmail: body.notificationEmail?.trim() || null,

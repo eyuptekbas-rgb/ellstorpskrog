@@ -2,6 +2,14 @@ import { NextResponse } from "next/server";
 import { getPublicSettings } from "@/lib/settings";
 
 export async function GET() {
-  const data = await getPublicSettings();
-  return NextResponse.json(data);
+  try {
+    const data = await getPublicSettings();
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error("GET /api/settings/public error:", error);
+    return NextResponse.json(
+      { error: "Failed to load settings" },
+      { status: 500 }
+    );
+  }
 }

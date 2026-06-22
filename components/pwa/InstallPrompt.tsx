@@ -21,8 +21,10 @@ export default function InstallPrompt() {
     if (isStandaloneMode() || isDismissedRecently() || !pwa) return;
 
     if (pwa.hasAndroidPrompt) {
-      setShowAndroid(true);
-      setShowIos(false);
+      queueMicrotask(() => {
+        setShowAndroid(true);
+        setShowIos(false);
+      });
       return;
     }
 
@@ -34,8 +36,10 @@ export default function InstallPrompt() {
 
   useEffect(() => {
     if (pwa?.isInstalled) {
-      setShowAndroid(false);
-      setShowIos(false);
+      queueMicrotask(() => {
+        setShowAndroid(false);
+        setShowIos(false);
+      });
     }
   }, [pwa?.isInstalled]);
 

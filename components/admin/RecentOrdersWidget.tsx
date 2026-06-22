@@ -15,7 +15,7 @@ type Order = {
   customerPhone: string;
   total: number;
   status: OrderStatus;
-  createdAt: Date;
+  createdAt: string | Date;
   items: { id: string; quantity: number }[];
 };
 
@@ -29,7 +29,7 @@ export default function RecentOrdersWidget({ orders }: Props) {
       <div className="mb-5 flex items-center justify-between gap-3">
         <div>
           <h2 className="font-serif text-xl text-white">Senaste ordrar</h2>
-          <p className="mt-0.5 text-sm text-white/45">De 5 senaste beställningarna</p>
+          <p className="mt-0.5 text-sm text-white/45">De 10 senaste beställningarna</p>
         </div>
         <Link
           href="/admin/orders"
@@ -47,6 +47,10 @@ export default function RecentOrdersWidget({ orders }: Props) {
       ) : (
         <ul className="space-y-2.5">
           {orders.map((order) => {
+            const createdAt =
+              typeof order.createdAt === "string"
+                ? new Date(order.createdAt)
+                : order.createdAt;
             const itemCount = order.items.reduce((s, i) => s + i.quantity, 0);
             return (
               <li key={order.id}>
@@ -75,7 +79,7 @@ export default function RecentOrdersWidget({ orders }: Props) {
                   <div className="shrink-0 text-right">
                     <p className="font-semibold text-[#e8c4a8]">{order.total} kr</p>
                     <p className="mt-0.5 text-[10px] text-white/35">
-                      {formatOrderDate(order.createdAt)}
+                      {formatOrderDate(createdAt)}
                     </p>
                   </div>
                 </Link>

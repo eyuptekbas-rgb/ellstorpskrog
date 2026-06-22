@@ -54,10 +54,12 @@ export default function ConsentProvider({
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    const stored = loadConsent();
-    setConsent(stored);
-    setBannerOpen(config.hasTracking && !consentDecided(stored));
-    setHydrated(true);
+    queueMicrotask(() => {
+      const stored = loadConsent();
+      setConsent(stored);
+      setBannerOpen(config.hasTracking && !consentDecided(stored));
+      setHydrated(true);
+    });
   }, [config.hasTracking]);
 
   const persist = useCallback((categories: ConsentCategories) => {

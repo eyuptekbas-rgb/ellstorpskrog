@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 import { ensureOpeningHours } from "@/lib/settings";
 import { prisma } from "@/lib/prisma";
+import { getAdminTenantId, tenantApiError } from "@/lib/tenant/admin-api";
 
 export async function GET() {
   try {
-    const hours = await ensureOpeningHours();
+    const tenantId = await getAdminTenantId();
+    const hours = await ensureOpeningHours(tenantId);
     return NextResponse.json(hours);
   } catch (error) {
+    const apiError = tenantApiError(error);
+    if (apiError) return apiError;
     console.error("GET /api/opening-hours error:", error);
     return NextResponse.json(
       { error: "Failed to fetch opening hours" },
@@ -25,6 +29,7 @@ type HourInput = {
 
 export async function PUT(req: Request) {
   try {
+    const tenantId = await getAdminTenantId();
     const body: { hours: HourInput[] } = await req.json();
     const { hours } = body;
 
@@ -35,12 +40,12 @@ export async function PUT(req: Request) {
       );
     }
 
-    await ensureOpeningHours();
+    await ensureOpeningHours(tenantId);
 
     const updated = await prisma.$transaction(
       hours.map((h) =>
         prisma.openingHours.update({
-          where: { dayOfWeek: h.dayOfWeek },
+          where: { tenantId_dayOfWeek: { tenantId, dayOfWeek: h.dayOfWeek } },
           data: {
             openTime: h.openTime,
             closeTime: h.closeTime,
@@ -54,6 +59,8 @@ export async function PUT(req: Request) {
       updated.sort((a, b) => a.dayOfWeek - b.dayOfWeek)
     );
   } catch (error) {
+    const apiError = tenantApiError(error);
+    if (apiError) return apiError;
     console.error("PUT /api/opening-hours error:", error);
     return NextResponse.json(
       { error: "Failed to update opening hours" },

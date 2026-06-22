@@ -19,6 +19,7 @@ export type OrderEmailPayload = {
   orderTypeLabel: string;
   paymentLabel: string;
   note: string | null;
+  estimatedReadyMinutes: number | null;
   total: number;
   status: OrderStatus;
   items: OrderItem[];
@@ -48,6 +49,7 @@ export function buildOrderEmailData(
       orderTypeLabel: ORDER_TYPE_LABELS[order.orderType],
       paymentLabel: PAYMENT_LABELS[order.paymentMethod],
       note: order.note,
+      estimatedReadyMinutes: order.estimatedReadyMinutes,
       total: order.total,
       status: order.status,
       items: order.items,

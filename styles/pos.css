@@ -1,0 +1,161 @@
+/* POS terminal layout — optimized for ZQ-P108B 15" touch hardware */
+
+.pos-root {
+  touch-action: manipulation;
+  overscroll-behavior: none;
+}
+
+.pos-sidebar,
+.pos-topbar {
+  position: relative;
+  z-index: 20;
+}
+
+.pos-order-list {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.pos-queue-board {
+  overscroll-behavior: none;
+}
+
+.pos-queue-column {
+  min-height: 0;
+}
+
+.pos-queue-column-header {
+  position: relative;
+  z-index: 10;
+}
+
+.pos-order-card {
+  touch-action: manipulation;
+}
+
+.pos-order-time-selector {
+  touch-action: manipulation;
+}
+
+.pos-time-btn,
+.pos-time-dialog-btn {
+  touch-action: manipulation;
+}
+
+.pos-root[data-pos-touch="true"] article .pos-time-btn,
+.pos-root[data-pos-touch="true"] article .pos-time-dialog-btn {
+  min-height: 88px;
+  height: 88px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.pos-root[data-pos-touch="true"] article .pos-time-btn {
+  font-size: 30px;
+}
+
+.pos-root[data-pos-screen="pos-terminal"][data-pos-touch="true"] article .pos-time-btn,
+.pos-root[data-pos-screen="pos-terminal"][data-pos-touch="true"] article .pos-time-dialog-btn {
+  min-height: 88px;
+  height: 88px;
+  font-size: inherit;
+}
+
+/* Touch-optimized controls when coarse pointer is detected */
+.pos-root[data-pos-touch="true"] .pos-nav-btn,
+.pos-root[data-pos-touch="true"] .pos-action-btn {
+  min-height: 3rem;
+  min-width: 3rem;
+}
+
+.pos-root[data-pos-touch="true"] .pos-search {
+  min-height: 3.25rem;
+  font-size: 1rem;
+}
+
+.pos-root[data-pos-touch="true"] article button {
+  min-height: 3.25rem;
+  padding-top: 0.875rem;
+  padding-bottom: 0.875rem;
+  font-size: 0.9375rem;
+}
+
+/* 15" POS terminal — large touch targets and spacing */
+.pos-root[data-pos-screen="pos-terminal"] .pos-nav-btn {
+  min-height: 3.75rem;
+  font-size: 1rem;
+}
+
+.pos-root[data-pos-screen="pos-terminal"][data-pos-touch="true"] .pos-action-btn {
+  min-height: 3.25rem;
+  min-width: 3.25rem;
+}
+
+.pos-root[data-pos-screen="pos-terminal"] .pos-order-list {
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+.pos-root[data-pos-screen="pos-terminal"][data-pos-touch="true"] article button {
+  min-height: 3.5rem;
+  font-size: 1rem;
+}
+
+/* Tablet layout — compact sidebar */
+.pos-root[data-pos-screen="tablet"] .pos-sidebar {
+  width: min(12rem, 26vw);
+}
+
+/* Mobile layout — stack with bottom nav feel */
+.pos-root[data-pos-screen="mobile"] {
+  flex-direction: column;
+}
+
+.pos-root[data-pos-screen="mobile"] .pos-sidebar {
+  width: 100%;
+  height: auto;
+  max-height: none;
+  flex-direction: row;
+  overflow-x: auto;
+  border-right: none;
+  border-bottom: 1px solid rgb(255 255 255 / 8%);
+}
+
+.pos-root[data-pos-screen="mobile"] .pos-sidebar > div:first-child,
+.pos-root[data-pos-screen="mobile"] .pos-sidebar > div:last-child {
+  display: none;
+}
+
+.pos-root[data-pos-screen="mobile"] .pos-sidebar nav {
+  flex-direction: row;
+  flex: 1;
+  overflow-x: auto;
+  padding: 0.5rem;
+}
+
+.pos-root[data-pos-screen="mobile"] .pos-nav-btn {
+  min-width: 8.5rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  min-height: 4rem;
+}
+
+.pos-root[data-pos-screen="mobile"] .pos-topbar {
+  height: auto;
+  flex-wrap: wrap;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+.pos-root[data-pos-screen="mobile"] .pos-drawer {
+  max-width: 100%;
+}
+
+html:has(.pos-terminal-app),
+body:has(.pos-terminal-app) {
+  overflow: hidden;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}

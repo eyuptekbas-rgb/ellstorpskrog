@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight, Star } from "lucide-react";
 import ProductImage from "@/components/ui/ProductImage";
+import { useTenantPublicPath } from "@/components/tenant/TenantPublicPathProvider";
 import type { FeaturedDish } from "@/lib/home/featured";
 
 type Props = {
@@ -8,6 +11,7 @@ type Props = {
 };
 
 export default function FeaturedDishes({ dishes }: Props) {
+  const tp = useTenantPublicPath();
   if (dishes.length === 0) return null;
 
   return (
@@ -24,7 +28,7 @@ export default function FeaturedDishes({ dishes }: Props) {
             </p>
           </div>
           <Link
-            href="/menu"
+            href={tp("/menu")}
             className="btn-secondary btn-sm hidden shrink-0 sm:inline-flex"
           >
             Se hela menyn
@@ -73,7 +77,7 @@ export default function FeaturedDishes({ dishes }: Props) {
                     </span>
                   </span>
                   <Link
-                    href="/menu"
+                    href={tp("/menu")}
                     className="text-xs font-semibold uppercase tracking-[0.12em] text-[#b85c38] transition hover:text-[#d4a574]"
                   >
                     Beställ →
@@ -85,7 +89,7 @@ export default function FeaturedDishes({ dishes }: Props) {
         </div>
 
         <Link
-          href="/menu"
+          href={tp("/menu")}
           className="btn-secondary btn-sm mt-6 flex w-full items-center justify-center lg:hidden"
         >
           Se hela menyn

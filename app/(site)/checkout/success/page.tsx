@@ -4,39 +4,55 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import LoadingSpinner from "@/components/checkout/LoadingSpinner";
 import SuccessView from "@/components/checkout/SuccessView";
-import { clearCart } from "@/lib/cart";
+import { clearCart, clearOrderNote } from "@/lib/cart";
 import { trackPurchaseConversion } from "@/lib/marketing/events";
 
 function SuccessContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
   const cashOrder = searchParams.get("cash") === "1";
-  const cashOrderNumber = searchParams.get("order_number");
-  const cashTotal = searchParams.get("total");
+  const cashOrderId = searchParams.get("order_id");
 
-  const [orderNumber, setOrderNumber] = useState(cashOrderNumber ?? "");
-  const [total, setTotal] = useState(cashTotal ? Number(cashTotal) : 0);
-  const [loading, setLoading] = useState(Boolean(sessionId));
+  const [orderNumber, setOrderNumber] = useState("");
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(Boolean(sessionId || cashOrderId));
   const [error, setError] = useState("");
 
   useEffect(() => {
     clearCart();
+    clearOrderNote();
   }, []);
 
   useEffect(() => {
+    if (cashOrder && cashOrderId) {
+      fetch(`/api/checkout/cash?order_id=${encodeURIComponent(cashOrderId)}`)
+        .then((res) => (res.ok ? res.json() : Promise.reject()))
+        .then((data: { orderNumber: string; total: number }) => {
+          setOrderNumber(data.orderNumber);
+          setTotal(data.total);
+          trackPurchaseConversion({
+            orderNumber: data.orderNumber,
+            value: data.total,
+          });
+        })
+        .catch(() => setError("Kunde inte verifiera beställningen."))
+        .finally(() => setLoading(false));
+      return;
+    }
+
     if (cashOrder) {
-      if (cashOrderNumber && cashTotal) {
-        trackPurchaseConversion({
-          orderNumber: cashOrderNumber,
-          value: Number(cashTotal),
-        });
-      }
+      queueMicrotask(() => {
+        setError("Kunde inte verifiera beställningen.");
+        setLoading(false);
+      });
       return;
     }
 
     if (!sessionId) {
-      setError("Ingen betalningssession hittades.");
-      setLoading(false);
+      queueMicrotask(() => {
+        setError("Ingen betalningssession hittades.");
+        setLoading(false);
+      });
       return;
     }
 
@@ -52,7 +68,7 @@ function SuccessContent() {
       })
       .catch(() => setError("Kunde inte verifiera betalningen."))
       .finally(() => setLoading(false));
-  }, [sessionId, cashOrder, cashOrderNumber, cashTotal]);
+  }, [sessionId, cashOrder, cashOrderId]);
 
   return (
     <SuccessView

@@ -1,5 +1,5 @@
 import ProductImage from "@/components/ui/ProductImage";
-import type { CartItem } from "@/lib/cart";
+import { sortCartByMenuOrder, type CartItem } from "@/lib/cart";
 import type { OrderType } from "./OrderTypeSelector";
 
 type Props = {
@@ -23,6 +23,8 @@ export default function OrderSummary({
   minimumOrder,
   belowMinimum,
 }: Props) {
+  const sortedCart = sortCartByMenuOrder(cart);
+
   return (
     <section className="card-premium overflow-hidden rounded-[var(--radius-card)]">
       <div className="border-b border-white/[0.06] bg-[#b85c38]/8 px-5 py-4 sm:px-6">
@@ -36,16 +38,16 @@ export default function OrderSummary({
 
       <div className="p-5 sm:p-6">
         <ul className="space-y-4">
-          {cart.map((item) => (
+          {sortedCart.map((item) => (
             <li
-              key={item.id}
+              key={item.lineKey}
               className="flex items-center justify-between gap-3"
             >
               <div className="flex min-w-0 items-center gap-3.5">
                 <div className="product-image-ring relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-[#111]">
                   <ProductImage
                     src={item.image}
-                    categorySlug={item.categorySlug ?? "pizza"}
+                    categorySlug={item.categorySlug ?? "vara-goda-pizzor"}
                     alt={item.name}
                     fill
                     thumbnail
@@ -58,14 +60,24 @@ export default function OrderSummary({
                   <span className="block text-sm font-medium leading-snug text-white/88">
                     {item.name}
                   </span>
-                  <span className="text-xs text-white/38">
+                  {item.selectedOptions.length > 0 && (
+                    <span className="mt-0.5 block text-[11px] leading-snug text-white/55">
+                      {item.selectedOptions.map((o) => o.name).join(", ")}
+                    </span>
+                  )}
+                  {item.note ? (
+                    <span className="mt-0.5 block text-[11px] italic text-white/55">
+                      {item.note}
+                    </span>
+                  ) : null}
+                  <span className="text-xs text-white/55">
                     {item.quantity} × {item.price} kr
                   </span>
                 </div>
               </div>
               <span className="shrink-0 font-serif text-lg text-[#e8c4a8]">
                 {item.price * item.quantity}
-                <span className="ml-0.5 font-sans text-xs text-white/35">
+                <span className="ml-0.5 font-sans text-xs text-white/55">
                   kr
                 </span>
               </span>
@@ -74,12 +86,12 @@ export default function OrderSummary({
         </ul>
 
         <div className="mt-6 space-y-2.5 border-t border-white/[0.06] pt-5 text-sm">
-          <div className="flex justify-between text-white/50">
+          <div className="flex justify-between text-white/55">
             <span>Delsumma</span>
             <span className="tabular-nums">{subtotal} kr</span>
           </div>
           {orderType === "levering" && deliveryFee > 0 && (
-            <div className="flex justify-between text-white/50">
+            <div className="flex justify-between text-white/55">
               <span>
                 Leverans
                 {zoneName ? ` (${zoneName})` : ""}
@@ -102,12 +114,12 @@ export default function OrderSummary({
         )}
 
         <div className="mt-5 flex items-end justify-between rounded-2xl border border-white/[0.06] bg-black/20 px-4 py-4">
-          <span className="text-sm font-medium text-white/45">
+          <span className="text-sm font-medium text-white/55">
             Totalt att betala
           </span>
           <span className="font-serif text-3xl leading-none text-[#e8c4a8]">
             {totalPrice}
-            <span className="ml-1 text-base font-sans text-white/35">kr</span>
+            <span className="ml-1 text-base font-sans text-white/55">kr</span>
           </span>
         </div>
       </div>

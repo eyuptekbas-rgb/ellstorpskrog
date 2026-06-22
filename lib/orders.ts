@@ -42,12 +42,18 @@ export const PAYMENT_LABELS: Record<PaymentMethod, string> = {
   CARD: "Kort (Stripe)",
   ON_PICKUP: "Betal vid avhämtning",
   ON_DELIVERY: "Betal vid leverans",
+  APPLE_PAY: "Apple Pay",
+  GOOGLE_PAY: "Google Pay",
+  SWISH: "Swish",
+  MOBILEPAY: "MobilePay",
 };
 
 export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   PENDING: "Obetald",
+  PROCESSING: "Behandlas",
   PAID: "Betald",
   FAILED: "Misslyckad",
+  CANCELLED: "Avbruten",
   REFUNDED: "Återbetald",
 };
 
@@ -55,9 +61,11 @@ export function paymentStatusStyle(status: PaymentStatus): string {
   switch (status) {
     case PaymentStatus.PAID:
       return "text-green-400 bg-green-400/10";
+    case PaymentStatus.PROCESSING:
     case PaymentStatus.PENDING:
       return "text-yellow-400 bg-yellow-400/10";
     case PaymentStatus.FAILED:
+    case PaymentStatus.CANCELLED:
       return "text-red-400 bg-red-400/10";
     case PaymentStatus.REFUNDED:
       return "text-purple-400 bg-purple-400/10";

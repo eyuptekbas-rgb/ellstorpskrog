@@ -16,6 +16,7 @@ import {
 import OrderStatusUpdater from "@/app/admin/orders/[id]/OrderStatusUpdater";
 import OrderAdminNote from "@/app/admin/orders/[id]/OrderAdminNote";
 import OrderPrintButton from "@/app/admin/orders/[id]/OrderPrintButton";
+import OrderItemLine from "@/components/admin/OrderItemLine";
 
 export const dynamic = "force-dynamic";
 
@@ -73,10 +74,12 @@ export default async function OrderDetailPage({ params }: Props) {
     customerAddress: order.customerAddress,
     orderType: order.orderType,
     paymentMethod: order.paymentMethod,
+    paymentStatus: order.paymentStatus,
     note: order.note,
     adminNote: order.adminNote,
     total: order.total,
     status: order.status,
+    estimatedReadyMinutes: order.estimatedReadyMinutes,
     createdAt: order.createdAt.toISOString(),
     items: order.items.map((item) => ({
       productName: item.productName,
@@ -201,11 +204,11 @@ export default async function OrderDetailPage({ params }: Props) {
             )}
           </div>
           {order.note && (
-            <div>
-              <p className="text-white/40 text-xs mb-1">Kundanteckning</p>
-              <p className="text-sm bg-[#111] rounded-xl p-3 text-white/80">
-                {order.note}
+            <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-amber-200/80 mb-1.5">
+                Kommentar till beställningen
               </p>
+              <p className="text-sm text-amber-50/90">{order.note}</p>
             </div>
           )}
         </section>
@@ -214,22 +217,13 @@ export default async function OrderDetailPage({ params }: Props) {
           <h2 className="text-lg font-serif text-[#b85c38]">Produkter</h2>
           <div className="space-y-2">
             {order.items.map((item) => (
-              <div
+              <OrderItemLine
                 key={item.id}
-                className="flex items-center justify-between gap-3 text-sm bg-[#111] rounded-xl p-3"
-              >
-                <div className="min-w-0">
-                  <p className="font-medium">
-                    {item.quantity}× {item.productName}
-                  </p>
-                  <p className="text-white/40 text-xs mt-0.5">
-                    {item.unitPrice} kr/st
-                  </p>
-                </div>
-                <span className="font-semibold text-[#b85c38] shrink-0">
-                  {item.totalPrice} kr
-                </span>
-              </div>
+                productName={item.productName}
+                quantity={item.quantity}
+                unitPrice={item.unitPrice}
+                totalPrice={item.totalPrice}
+              />
             ))}
           </div>
           <div className="flex items-center justify-between pt-3 border-t border-white/5">

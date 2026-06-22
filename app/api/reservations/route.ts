@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server";
 import { ReservationStatus } from "@prisma/client";
+import { auth } from "@/auth";
+import { isCustomerRole } from "@/lib/auth/roles";
 import { requireStaffSession } from "@/lib/auth/require-staff";
 import { isPrismaConnectionError } from "@/lib/db/errors";
 import { prisma } from "@/lib/prisma";
 import { validateReservationInput } from "@/lib/reservations";
+import { getAdminTenantId, tenantApiError } from "@/lib/tenant/admin-api";
+import { resolvePublicTenantId } from "@/lib/tenant/resolve";
 
 export async function POST(req: Request) {
   try {
+    const tenantId = await resolvePublicTenantId();
     const body = await req.json();
     const parsed = validateReservationInput(body);
 
@@ -14,9 +19,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
 
+    const session = await auth();
+    const customerUserId =
+      session?.user?.id && isCustomerRole(session.user.role)
+        ? session.user.id
+        : null;
+
     const reservation = await prisma.reservation.create({
       data: {
+        tenantId,
         ...parsed.data,
+        userId: customerUserId,
         status: ReservationStatus.NEW,
       },
     });
@@ -43,6 +56,7 @@ export async function GET(req: Request) {
   if (response) return response;
 
   try {
+    const tenantId = await getAdminTenantId();
     const { searchParams } = new URL(req.url);
     const search = searchParams.get("search")?.trim();
     const status = searchParams.get("status");
@@ -54,6 +68,7 @@ export async function GET(req: Request) {
 
     const reservations = await prisma.reservation.findMany({
       where: {
+        tenantId,
         ...statusWhere,
         ...(search
           ? {
@@ -70,6 +85,8 @@ export async function GET(req: Request) {
 
     return NextResponse.json(reservations);
   } catch (error) {
+    const apiError = tenantApiError(error);
+    if (apiError) return apiError;
     if (isPrismaConnectionError(error)) {
       return NextResponse.json([], { status: 200 });
     }

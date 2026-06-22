@@ -1,9 +1,9 @@
 /** Ellstorps Krog PWA branding — shared across manifest, meta tags, and native wrappers. */
 export const PWA = {
-  name: "Ellstorps Krog",
-  shortName: "Ellstorps",
+  name: "EllstorpsKrog",
+  shortName: "EllstorpsKrog",
   description:
-    "Beställ mat online, se menyn och kontakta Ellstorps Krog i Malmö.",
+    "Beställ mat online, se menyn och kontakta EllstorpsKrog i Malmö.",
   themeColor: "#b85c38",
   backgroundColor: "#0f0f0f",
   display: "standalone" as const,

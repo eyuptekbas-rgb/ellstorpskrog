@@ -1,5 +1,13 @@
 import { getDbErrorMessage, isPrismaConnectionError } from "@/lib/db/errors";
+import { categoryExtrasInclude, mapCategoryExtrasToMenuOptions } from "@/lib/extra-options";
 import { prisma } from "@/lib/prisma";
+import { resolvePublicTenantId } from "@/lib/tenant/resolve";
+
+export type MenuProductOption = {
+  id: string;
+  name: string;
+  priceModifier: number;
+};
 
 export type MenuProduct = {
   id: string;
@@ -8,6 +16,8 @@ export type MenuProduct = {
   price: number;
   image: string | null;
   soldOut: boolean;
+  sortOrder: number;
+  options: MenuProductOption[];
 };
 
 export type MenuCategory = {
@@ -19,12 +29,15 @@ export type MenuCategory = {
   products: MenuProduct[];
 };
 
-export async function getPublicMenu(): Promise<MenuCategory[]> {
+export async function getPublicMenu(tenantId?: string): Promise<MenuCategory[]> {
   try {
+    const resolvedTenantId = tenantId ?? (await resolvePublicTenantId());
+
     const categories = await prisma.category.findMany({
-      where: { active: true },
+      where: { active: true, tenantId: resolvedTenantId },
       orderBy: { sortOrder: "asc" },
       include: {
+        ...categoryExtrasInclude,
         products: {
           where: { active: true },
           orderBy: { sortOrder: "asc" },
@@ -33,21 +46,29 @@ export async function getPublicMenu(): Promise<MenuCategory[]> {
     });
 
     return categories
-      .map((category) => ({
-        id: category.id,
-        slug: category.slug,
-        name: category.name,
-        image: category.image,
-        sortOrder: category.sortOrder,
-        products: category.products.map((product) => ({
-          id: product.id,
-          name: product.name,
-          description: product.description,
-          price: product.price,
-          image: product.image,
-          soldOut: product.soldOut,
-        })),
-      }))
+      .map((category) => {
+        const categoryOptions = mapCategoryExtrasToMenuOptions(
+          category.extraOptions
+        );
+
+        return {
+          id: category.id,
+          slug: category.slug,
+          name: category.name,
+          image: category.image,
+          sortOrder: category.sortOrder,
+          products: category.products.map((product) => ({
+            id: product.id,
+            name: product.name,
+            description: product.description,
+            price: product.price,
+            image: product.image,
+            soldOut: product.soldOut,
+            sortOrder: product.sortOrder,
+            options: categoryOptions,
+          })),
+        };
+      })
       .filter((category) => category.products.length > 0);
   } catch (error) {
     if (isPrismaConnectionError(error)) {

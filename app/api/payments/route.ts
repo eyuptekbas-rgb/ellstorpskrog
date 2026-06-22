@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { buildStripeConfig } from "@/lib/stripe/config";
 import { ensureSiteSettings } from "@/lib/settings";
 import { prisma } from "@/lib/prisma";
+import { getAdminTenantId, tenantApiError } from "@/lib/tenant/admin-api";
 
 function maskKey(key: string | null | undefined): string {
   if (!key) return "";
@@ -9,29 +10,39 @@ function maskKey(key: string | null | undefined): string {
   return `${key.slice(0, 7)}…${key.slice(-4)}`;
 }
 
+function paymentsResponse(
+  settings: Awaited<ReturnType<typeof ensureSiteSettings>>
+) {
+  const config = buildStripeConfig(settings);
+  return {
+    stripeEnabled: settings.stripeEnabled,
+    stripeTestMode: settings.stripeTestMode,
+    stripePublishableKeyTest: settings.stripePublishableKeyTest ?? "",
+    stripePublishableKeyLive: settings.stripePublishableKeyLive ?? "",
+    configured: config.configured,
+    activeMode: config.testMode ? "test" : "live",
+    maskedPublishableKey: maskKey(config.publishableKey),
+    maskedSecretKey: maskKey(config.secretKey),
+    maskedWebhookSecretTest: maskKey(settings.stripeWebhookSecretTest),
+    maskedWebhookSecretLive: maskKey(settings.stripeWebhookSecretLive),
+    hasSecretKeyTest: Boolean(settings.stripeSecretKeyTest?.trim()),
+    hasSecretKeyLive: Boolean(settings.stripeSecretKeyLive?.trim()),
+    hasWebhookSecretTest: Boolean(settings.stripeWebhookSecretTest?.trim()),
+    hasWebhookSecretLive: Boolean(settings.stripeWebhookSecretLive?.trim()),
+    hasEnvSecretKey: Boolean(process.env.STRIPE_SECRET_KEY),
+    hasEnvPublishableKey: Boolean(process.env.STRIPE_PUBLISHABLE_KEY),
+    hasEnvWebhookSecret: Boolean(process.env.STRIPE_WEBHOOK_SECRET),
+  };
+}
+
 export async function GET() {
   try {
-    const settings = await ensureSiteSettings();
-    const config = buildStripeConfig(settings);
-
-    return NextResponse.json({
-      stripeEnabled: settings.stripeEnabled,
-      stripeTestMode: settings.stripeTestMode,
-      stripePublishableKeyTest: settings.stripePublishableKeyTest ?? "",
-      stripeSecretKeyTest: settings.stripeSecretKeyTest ?? "",
-      stripeWebhookSecretTest: settings.stripeWebhookSecretTest ?? "",
-      stripePublishableKeyLive: settings.stripePublishableKeyLive ?? "",
-      stripeSecretKeyLive: settings.stripeSecretKeyLive ?? "",
-      stripeWebhookSecretLive: settings.stripeWebhookSecretLive ?? "",
-      configured: config.configured,
-      activeMode: config.testMode ? "test" : "live",
-      maskedPublishableKey: maskKey(config.publishableKey),
-      maskedSecretKey: maskKey(config.secretKey),
-      hasEnvSecretKey: Boolean(process.env.STRIPE_SECRET_KEY),
-      hasEnvPublishableKey: Boolean(process.env.STRIPE_PUBLISHABLE_KEY),
-      hasEnvWebhookSecret: Boolean(process.env.STRIPE_WEBHOOK_SECRET),
-    });
+    const tenantId = await getAdminTenantId();
+    const settings = await ensureSiteSettings(tenantId);
+    return NextResponse.json(paymentsResponse(settings));
   } catch (error) {
+    const apiError = tenantApiError(error);
+    if (apiError) return apiError;
     console.error("GET /api/payments error:", error);
     return NextResponse.json(
       { error: "Failed to fetch payment settings" },
@@ -51,13 +62,23 @@ type UpdatePaymentsBody = {
   stripeWebhookSecretLive?: string | null;
 };
 
+function secretUpdate(
+  value: string | null | undefined
+): string | null | undefined {
+  if (value === undefined) return undefined;
+  const trimmed = value?.trim();
+  if (!trimmed || trimmed.includes("…")) return undefined;
+  return trimmed;
+}
+
 export async function PATCH(req: Request) {
   try {
-    await ensureSiteSettings();
+    const tenantId = await getAdminTenantId();
+    await ensureSiteSettings(tenantId);
     const body: UpdatePaymentsBody = await req.json();
 
     const settings = await prisma.siteSettings.update({
-      where: { id: 1 },
+      where: { tenantId },
       data: {
         ...(body.stripeEnabled !== undefined && {
           stripeEnabled: body.stripeEnabled,
@@ -69,47 +90,31 @@ export async function PATCH(req: Request) {
           stripePublishableKeyTest:
             body.stripePublishableKeyTest?.trim() || null,
         }),
-        ...(body.stripeSecretKeyTest !== undefined && {
-          stripeSecretKeyTest: body.stripeSecretKeyTest?.trim() || null,
+        ...(secretUpdate(body.stripeSecretKeyTest) !== undefined && {
+          stripeSecretKeyTest: secretUpdate(body.stripeSecretKeyTest) ?? null,
         }),
-        ...(body.stripeWebhookSecretTest !== undefined && {
+        ...(secretUpdate(body.stripeWebhookSecretTest) !== undefined && {
           stripeWebhookSecretTest:
-            body.stripeWebhookSecretTest?.trim() || null,
+            secretUpdate(body.stripeWebhookSecretTest) ?? null,
         }),
         ...(body.stripePublishableKeyLive !== undefined && {
           stripePublishableKeyLive:
             body.stripePublishableKeyLive?.trim() || null,
         }),
-        ...(body.stripeSecretKeyLive !== undefined && {
-          stripeSecretKeyLive: body.stripeSecretKeyLive?.trim() || null,
+        ...(secretUpdate(body.stripeSecretKeyLive) !== undefined && {
+          stripeSecretKeyLive: secretUpdate(body.stripeSecretKeyLive) ?? null,
         }),
-        ...(body.stripeWebhookSecretLive !== undefined && {
+        ...(secretUpdate(body.stripeWebhookSecretLive) !== undefined && {
           stripeWebhookSecretLive:
-            body.stripeWebhookSecretLive?.trim() || null,
+            secretUpdate(body.stripeWebhookSecretLive) ?? null,
         }),
       },
     });
 
-    const config = buildStripeConfig(settings);
-
-    return NextResponse.json({
-      stripeEnabled: settings.stripeEnabled,
-      stripeTestMode: settings.stripeTestMode,
-      stripePublishableKeyTest: settings.stripePublishableKeyTest ?? "",
-      stripeSecretKeyTest: settings.stripeSecretKeyTest ?? "",
-      stripeWebhookSecretTest: settings.stripeWebhookSecretTest ?? "",
-      stripePublishableKeyLive: settings.stripePublishableKeyLive ?? "",
-      stripeSecretKeyLive: settings.stripeSecretKeyLive ?? "",
-      stripeWebhookSecretLive: settings.stripeWebhookSecretLive ?? "",
-      configured: config.configured,
-      activeMode: config.testMode ? "test" : "live",
-      maskedPublishableKey: maskKey(config.publishableKey),
-      maskedSecretKey: maskKey(config.secretKey),
-      hasEnvSecretKey: Boolean(process.env.STRIPE_SECRET_KEY),
-      hasEnvPublishableKey: Boolean(process.env.STRIPE_PUBLISHABLE_KEY),
-      hasEnvWebhookSecret: Boolean(process.env.STRIPE_WEBHOOK_SECRET),
-    });
+    return NextResponse.json(paymentsResponse(settings));
   } catch (error) {
+    const apiError = tenantApiError(error);
+    if (apiError) return apiError;
     console.error("PATCH /api/payments error:", error);
     return NextResponse.json(
       { error: "Failed to update payment settings" },
