@@ -2,6 +2,7 @@
 
 import ConceptHomeRouter from "@/components/concepts/ConceptHomeRouter";
 import type { FeaturedDish } from "@/lib/home/featured";
+import type { GoogleReview } from "@/lib/home/google-review-data";
 
 export type HomeSettings = {
   restaurantName: string;
@@ -12,6 +13,8 @@ export type HomeSettings = {
   pickupEnabled: boolean;
   deliveryEnabled: boolean;
   featuredDishes: FeaturedDish[];
+  googleReviews?: GoogleReview[];
+  googleReviewsUrl?: string;
 };
 
 export default function HomeClient(props: HomeSettings) {

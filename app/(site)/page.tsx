@@ -1,6 +1,7 @@
 import HomeClient from "@/app/(site)/HomeClient";
 import JsonLd from "@/components/seo/JsonLd";
 import { getFeaturedDishes } from "@/lib/home/featured";
+import { getGoogleReviews, getGoogleReviewsUrl } from "@/lib/home/google-reviews";
 import { getPublicMenu } from "@/lib/menu";
 import { buildHomeSchemaGraph } from "@/lib/seo/schema";
 import { getPublicSettings, phoneHref } from "@/lib/settings";
@@ -8,8 +9,11 @@ import { getPublicSettings, phoneHref } from "@/lib/settings";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const { settings, openingHours, isOpen } = await getPublicSettings();
-  const menu = await getPublicMenu();
+  const [{ settings, openingHours, isOpen }, menu, googleReviews] = await Promise.all([
+    getPublicSettings(),
+    getPublicMenu(),
+    getGoogleReviews(),
+  ]);
   const featuredDishes = getFeaturedDishes(menu, 6);
   const schema = buildHomeSchemaGraph(settings, openingHours);
 
@@ -25,6 +29,8 @@ export default async function Home() {
         pickupEnabled={settings.pickupEnabled}
         deliveryEnabled={settings.deliveryEnabled}
         featuredDishes={featuredDishes}
+        googleReviews={googleReviews}
+        googleReviewsUrl={getGoogleReviewsUrl()}
       />
     </>
   );

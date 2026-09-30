@@ -412,7 +412,7 @@ export function TraditionalHome(props: Props) {
       <FeaturedDishes dishes={props.featuredDishes} />
       <HomeOpeningHours isOpen={props.isOpen} />
       <DeliveryPickup pickupEnabled={props.pickupEnabled} deliveryEnabled={props.deliveryEnabled} />
-      <Reviews />
+      <Reviews reviews={props.googleReviews} googleUrl={props.googleReviewsUrl ?? "https://www.google.com/maps/search/?api=1&query=Ellstorps+Kvarterskrog+Sallerupsv%C3%A4gen+28D+Malm%C3%B6"} />
       <section className="hidden px-[var(--content-px)] pb-[var(--section-py)] lg:block">
         <BookingStrip />
       </section>
@@ -433,7 +433,7 @@ export function DeliveryAppHome(props: Props) {
       />
       <HomeOpeningHours isOpen={props.isOpen} />
       <DeliveryPickup pickupEnabled={props.pickupEnabled} deliveryEnabled={props.deliveryEnabled} />
-      <Reviews />
+      <Reviews reviews={props.googleReviews} googleUrl={props.googleReviewsUrl ?? "https://www.google.com/maps/search/?api=1&query=Ellstorps+Kvarterskrog+Sallerupsv%C3%A4gen+28D+Malm%C3%B6"} />
     </Shell>
   );
 }
@@ -445,7 +445,7 @@ export function BookingFirstHome(props: Props) {
       <HomeOpeningHours isOpen={props.isOpen} />
       <BookingStrip compact />
       <FeaturedDishes dishes={props.featuredDishes} />
-      <Reviews />
+      <Reviews reviews={props.googleReviews} googleUrl={props.googleReviewsUrl ?? "https://www.google.com/maps/search/?api=1&query=Ellstorps+Kvarterskrog+Sallerupsv%C3%A4gen+28D+Malm%C3%B6"} />
       <DeliveryPickup pickupEnabled={props.pickupEnabled} deliveryEnabled={props.deliveryEnabled} />
     </Shell>
   );
@@ -458,7 +458,7 @@ export function CardModularHome(props: Props) {
       <ModularCards {...props} />
       <FeaturedDishes dishes={props.featuredDishes} />
       <HomeOpeningHours isOpen={props.isOpen} />
-      <Reviews />
+      <Reviews reviews={props.googleReviews} googleUrl={props.googleReviewsUrl ?? "https://www.google.com/maps/search/?api=1&query=Ellstorps+Kvarterskrog+Sallerupsv%C3%A4gen+28D+Malm%C3%B6"} />
     </Shell>
   );
 }
@@ -479,7 +479,7 @@ export function LuxuryEditorialHome(props: Props) {
       <EditorialHero {...props} />
       <FeaturedDishes dishes={props.featuredDishes} />
       <BookingStrip compact />
-      <Reviews />
+      <Reviews reviews={props.googleReviews} googleUrl={props.googleReviewsUrl ?? "https://www.google.com/maps/search/?api=1&query=Ellstorps+Kvarterskrog+Sallerupsv%C3%A4gen+28D+Malm%C3%B6"} />
       <HomeOpeningHours isOpen={props.isOpen} />
     </Shell>
   );
@@ -491,7 +491,7 @@ export function ScandinavianImageryHome(props: Props) {
       <ScandinavianHero {...props} />
       <FeaturedDishes dishes={props.featuredDishes} />
       <HomeOpeningHours isOpen={props.isOpen} />
-      <Reviews />
+      <Reviews reviews={props.googleReviews} googleUrl={props.googleReviewsUrl ?? "https://www.google.com/maps/search/?api=1&query=Ellstorps+Kvarterskrog+Sallerupsv%C3%A4gen+28D+Malm%C3%B6"} />
     </Shell>
   );
 }
@@ -507,7 +507,7 @@ export function GastroPubHome(props: Props) {
         deliveryEnabled={props.deliveryEnabled}
         phoneLink={props.phoneLink}
       />
-      <Reviews />
+      <Reviews reviews={props.googleReviews} googleUrl={props.googleReviewsUrl ?? "https://www.google.com/maps/search/?api=1&query=Ellstorps+Kvarterskrog+Sallerupsv%C3%A4gen+28D+Malm%C3%B6"} />
       <HomeOpeningHours isOpen={props.isOpen} />
     </Shell>
   );
@@ -535,7 +535,7 @@ export function AppStoreHorizontalHome(props: Props) {
         </div>
       </section>
       <FeaturedDishes dishes={props.featuredDishes} />
-      <Reviews />
+      <Reviews reviews={props.googleReviews} googleUrl={props.googleReviewsUrl ?? "https://www.google.com/maps/search/?api=1&query=Ellstorps+Kvarterskrog+Sallerupsv%C3%A4gen+28D+Malm%C3%B6"} />
       <HomeOpeningHours isOpen={props.isOpen} />
     </Shell>
   );
