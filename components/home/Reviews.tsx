@@ -52,7 +52,7 @@ export default function Reviews({ reviews = [], googleUrl }: { reviews?: GoogleR
 
               <div className="border-t border-white/[0.06] pt-4">
                 <p className="text-sm font-semibold text-white">{review.name}</p>
-                <a href={googleUrl} target="_blank" rel="noopener noreferrer" className="mt-0.5 inline-block text-xs text-white/55 underline underline-offset-4 hover:text-white">Google Maps</a>
+                <a href={googleUrl} target="_blank" rel="noopener noreferrer" className="mt-0.5 inline-block text-xs text-white/55 underline underline-offset-4 hover:text-white">Visa på Google Maps</a>
               </div>
             </article>
           ))}
