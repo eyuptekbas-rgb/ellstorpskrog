@@ -9,6 +9,15 @@ export type MenuProductOption = {
   priceModifier: number;
 };
 
+export type MenuProductOptionGroup = {
+  id: string;
+  name: string;
+  required: boolean;
+  minSelect: number;
+  maxSelect: number;
+  options: MenuProductOption[];
+};
+
 export type MenuProduct = {
   id: string;
   name: string;
@@ -18,6 +27,7 @@ export type MenuProduct = {
   soldOut: boolean;
   sortOrder: number;
   options: MenuProductOption[];
+  optionGroups: MenuProductOptionGroup[];
 };
 
 export type MenuCategory = {
@@ -41,6 +51,12 @@ export async function getPublicMenu(tenantId?: string): Promise<MenuCategory[]> 
         products: {
           where: { active: true },
           orderBy: { sortOrder: "asc" },
+          include: {
+            optionGroups: {
+              orderBy: { sortOrder: "asc" },
+              include: { options: { orderBy: { sortOrder: "asc" } } },
+            },
+          },
         },
       },
     });
@@ -66,6 +82,18 @@ export async function getPublicMenu(tenantId?: string): Promise<MenuCategory[]> 
             soldOut: product.soldOut,
             sortOrder: product.sortOrder,
             options: categoryOptions,
+            optionGroups: product.optionGroups.map((group) => ({
+              id: group.id,
+              name: group.name,
+              required: group.required,
+              minSelect: group.minSelect,
+              maxSelect: group.maxSelect,
+              options: group.options.map((option) => ({
+                id: option.id,
+                name: option.name,
+                priceModifier: option.priceModifier,
+              })),
+            })),
           })),
         };
       })

@@ -7,7 +7,7 @@ export type PrintDedupKey = {
   orderId: string;
   role: PrinterRole | "receipt";
   documentType: "receipt" | "kitchen-ticket";
-  source: "auto" | "manual";
+  source: "auto" | "manual" | "ready";
 };
 
 function storageKey(key: PrintDedupKey): string {
@@ -42,6 +42,18 @@ export function hasAutoPrintCompleted(key: Omit<PrintDedupKey, "source">): boole
 export function markAutoPrintCompleted(key: Omit<PrintDedupKey, "source">) {
   const keys = loadKeys();
   keys[storageKey({ ...key, source: "auto" })] = new Date().toISOString();
+  saveKeys(keys);
+}
+
+/** READY receipts are separate from acceptance auto-print and manual reprints. */
+export function hasReadyPrintCompleted(key: Omit<PrintDedupKey, "source">): boolean {
+  const keys = loadKeys();
+  return Boolean(keys[storageKey({ ...key, source: "ready" })]);
+}
+
+export function markReadyPrintCompleted(key: Omit<PrintDedupKey, "source">) {
+  const keys = loadKeys();
+  keys[storageKey({ ...key, source: "ready" })] = new Date().toISOString();
   saveKeys(keys);
 }
 

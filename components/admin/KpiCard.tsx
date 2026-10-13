@@ -50,7 +50,7 @@ export default function KpiCard({
             {label}
           </p>
           <p
-            className={`mt-3 font-serif text-2xl leading-none sm:text-[2rem] ${styles.value}`}
+            className={`mt-3 whitespace-nowrap font-serif text-2xl leading-none sm:text-[2rem] ${styles.value}`}
           >
             {value}
           </p>

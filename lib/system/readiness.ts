@@ -47,7 +47,8 @@ export function percentFromChecks(items: SetupCheckItem[]): number {
 }
 
 export async function buildSetupChecklist(
-  environment: EnvVarStatus[]
+  environment: EnvVarStatus[],
+  tenantId?: string
 ): Promise<{
   all: SetupCheckItem[];
   stripe: SetupCheckItem[];
@@ -56,7 +57,7 @@ export async function buildSetupChecklist(
   stripeReadinessPercent: number;
   emailReadinessPercent: number;
 }> {
-  const settings = await ensureSiteSettings();
+  const settings = await ensureSiteSettings(tenantId);
   const stripeActive = buildStripeConfig(settings);
   const stripeTest = buildStripeConfig({ ...settings, stripeTestMode: true });
   const stripeLive = buildStripeConfig({ ...settings, stripeTestMode: false });

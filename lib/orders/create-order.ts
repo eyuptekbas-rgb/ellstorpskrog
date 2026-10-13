@@ -85,13 +85,10 @@ export const ORDER_TYPE_MAP: Record<string, OrderType> = {
 };
 
 export const PAYMENT_MAP: Record<string, PaymentMethod> = {
+  afhentning: PaymentMethod.ON_PICKUP,
   kort: PaymentMethod.CARD,
   card: PaymentMethod.CARD,
   CARD: PaymentMethod.CARD,
-  afhentning: PaymentMethod.ON_PICKUP,
-  ON_PICKUP: PaymentMethod.ON_PICKUP,
-  levering_betalning: PaymentMethod.ON_DELIVERY,
-  ON_DELIVERY: PaymentMethod.ON_DELIVERY,
   apple_pay: PaymentMethod.APPLE_PAY,
   APPLE_PAY: PaymentMethod.APPLE_PAY,
   google_pay: PaymentMethod.GOOGLE_PAY,
@@ -102,7 +99,5 @@ export const PAYMENT_MAP: Record<string, PaymentMethod> = {
   MOBILEPAY: PaymentMethod.MOBILEPAY,
 };
 
-export const OFFLINE_PAYMENT_METHODS: PaymentMethod[] = [
-  PaymentMethod.ON_PICKUP,
-  PaymentMethod.ON_DELIVERY,
-];
+export const OFFLINE_PAYMENT_METHODS: PaymentMethod[] =
+  process.env.NODE_ENV === "production" ? [] : [PaymentMethod.ON_PICKUP];

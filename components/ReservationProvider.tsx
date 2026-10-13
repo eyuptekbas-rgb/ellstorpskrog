@@ -4,7 +4,8 @@ import { createContext, useCallback, useContext, useState } from "react";
 import ReservationModal from "@/components/reservation/ReservationModal";
 
 type ReservationContextType = {
-  openReservation: () => void;
+  openReservation: (tableId?: string | React.MouseEvent<HTMLButtonElement>) => void;
+  selectedTableId: string | null;
   closeReservation: () => void;
   isReservationOpen: boolean;
 };
@@ -29,20 +30,22 @@ export default function ReservationProvider({
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
 
-  const openReservation = useCallback(() => setOpen(true), []);
+  const openReservation = useCallback((tableId?: string | React.MouseEvent<HTMLButtonElement>) => { setSelectedTableId(typeof tableId === "string" ? tableId : null); setOpen(true); }, []);
   const closeReservation = useCallback(() => setOpen(false), []);
 
   return (
     <ReservationContext.Provider
       value={{
         openReservation,
+        selectedTableId,
         closeReservation,
         isReservationOpen: open,
       }}
     >
       {children}
-      <ReservationModal open={open} onClose={closeReservation} />
+      <ReservationModal open={open} onClose={closeReservation} selectedTableId={selectedTableId} onTableChange={setSelectedTableId} />
     </ReservationContext.Provider>
   );
 }

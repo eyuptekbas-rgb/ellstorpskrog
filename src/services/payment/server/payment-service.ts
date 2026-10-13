@@ -1,5 +1,7 @@
 import { PaymentStatus } from "@prisma/client";
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
+import { swishAmountsMatch } from "../providers/swish/amounts";
+import { confirmSwishPayment } from "./swish-confirmation";
 import {
   markOrderPaid,
   markOrderPaymentFailed,
@@ -51,6 +53,15 @@ export class PaymentService {
     const provider = this.registry.getProvider(providerId);
 
     const payment = await this.payments.transaction(async (tx) => {
+      if (providerId === "swish") {
+        await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${data.orderId} AND "tenantId" = ${data.businessId} FOR UPDATE`;
+        const current = await tx.order.findFirst({ where: { id: data.orderId, tenantId: data.businessId } });
+        if (!current || current.status === "CANCELLED" || current.paymentStatus === "PAID" || data.currency !== "SEK" || !swishAmountsMatch(String(current.total), data.amount)) {
+          throw new PaymentError("Invalid Swish order or amount", "INVALID_SWISH_ORDER");
+        }
+        const active = await tx.payment.findFirst({ where: { orderId: data.orderId, provider: "swish", status: { in: ["PENDING", "PROCESSING", "PAID"] } } });
+        if (active) throw new PaymentError("Swish payment already exists; check its status before retrying", "SWISH_ALREADY_EXISTS");
+      }
       const order = await this.payments.findOrderForPayment(
         data.businessId,
         data.orderId,
@@ -81,6 +92,7 @@ export class PaymentService {
           amount: data.amount,
           currency: data.currency,
           provider: providerId,
+          ...(providerId === "swish" && { providerPaymentId: randomUUID().replaceAll("-", "").toUpperCase() }),
           providerReference: data.providerReference ?? null,
         },
         tx
@@ -95,9 +107,22 @@ export class PaymentService {
       currency: data.currency,
       providerReference: data.providerReference,
       paymentId: payment.id,
+      swishPayerPhone: data.swishPayerPhone,
     });
 
     const updated = await this.payments.transaction(async (tx) => {
+      if (providerId === "swish") {
+        // A fast callback may already have committed PAID; never overwrite it.
+        await tx.payment.updateMany({
+          where: { id: payment.id, businessId: data.businessId, status: "PENDING" },
+          data: { status: providerResult.status },
+        });
+        if (providerResult.status === "FAILED") await tx.order.updateMany({
+          where: { id: data.orderId, tenantId: data.businessId, paymentStatus: "PENDING" },
+          data: { paymentStatus: "FAILED" },
+        });
+        return (await tx.payment.findUniqueOrThrow({ where: { id: payment.id } }));
+      }
       const result = await this.payments.update(
         data.businessId,
         payment.id,
@@ -131,6 +156,7 @@ export class PaymentService {
   ): Promise<PaymentDTO> {
     const input = paymentOperationSchema.parse({ businessId, paymentId });
     const payment = await this.requirePayment(input.businessId, input.paymentId);
+    if (payment.provider === "swish") return toPaymentDTO((await confirmSwishPayment(payment.id)).payment);
 
     if (payment.status !== PaymentStatus.PENDING) {
       throw new PaymentError("Payment is not pending", "INVALID_STATUS");
@@ -188,6 +214,8 @@ export class PaymentService {
     const providerResult = payment.providerPaymentId
       ? await provider.cancelPayment(payment.providerPaymentId)
       : { success: true, status: PaymentStatus.CANCELLED };
+    if (payment.provider === "swish" && !providerResult.success) throw new PaymentError("Swish cancellation was not confirmed", "SWISH_CANCEL_FAILED");
+    if (payment.provider === "swish") return toPaymentDTO((await confirmSwishPayment(payment.id)).payment);
 
     return this.payments.transaction(async (tx) => {
       const current = await this.requirePayment(
@@ -229,6 +257,8 @@ export class PaymentService {
     if (payment.status !== PaymentStatus.PAID) {
       throw new PaymentError("Only paid payments can be refunded", "INVALID_STATUS");
     }
+
+    if (payment.provider === "swish") throw new PaymentError("Swish refunds require a separately verified refund flow", "SWISH_REFUND_UNAVAILABLE");
 
     const provider = this.registry.getProvider(asProviderId(payment.provider));
 
@@ -297,6 +327,8 @@ export class PaymentService {
         operation.paymentId,
         tx
       );
+
+      if (current.provider === "swish") throw new PaymentError("Swish status requires mTLS confirmation", "SWISH_CONFIRMATION_REQUIRED");
 
       if (current.status === input.status) {
         return current;

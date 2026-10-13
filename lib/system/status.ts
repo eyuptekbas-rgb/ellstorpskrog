@@ -276,9 +276,9 @@ function computeReadiness(
   return { percent, blockers };
 }
 
-export async function getSystemStatus(): Promise<SystemStatus> {
+export async function getSystemStatus(tenantId?: string): Promise<SystemStatus> {
   const health = await runHealthChecks();
-  const stripe = await getStripeConfig();
+  const stripe = await getStripeConfig(tenantId);
 
   const environment: EnvVarStatus[] = ENV_CHECKS.map(({ key, required, label }) => ({
     key,
@@ -312,7 +312,7 @@ export async function getSystemStatus(): Promise<SystemStatus> {
   }
 
   const { buildSetupChecklist, getMissingEnvVars } = await import("./readiness");
-  const setup = await buildSetupChecklist(environment);
+  const setup = await buildSetupChecklist(environment, tenantId);
 
   const overallPercent = Math.round(
     (percent + setup.stripeReadinessPercent + setup.emailReadinessPercent) / 3

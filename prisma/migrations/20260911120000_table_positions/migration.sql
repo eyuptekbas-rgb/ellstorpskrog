@@ -1,0 +1,2 @@
+ALTER TABLE "RestaurantTable" ADD COLUMN "positionX" DOUBLE PRECISION;
+ALTER TABLE "RestaurantTable" ADD COLUMN "positionY" DOUBLE PRECISION;

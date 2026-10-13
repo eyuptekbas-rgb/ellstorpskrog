@@ -27,6 +27,11 @@
 # misc
 .DS_Store
 *.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
 prisma/dev.db
 prisma/dev.db-journal
 
@@ -59,3 +64,5 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+
+.env*

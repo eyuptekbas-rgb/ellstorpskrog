@@ -166,6 +166,8 @@ export type AdminTableRow = {
   id: string;
   name: string;
   capacity: number;
+  positionX: number | null;
+  positionY: number | null;
   mergeGroupId: string | null;
   sortOrder: number;
   active: boolean;

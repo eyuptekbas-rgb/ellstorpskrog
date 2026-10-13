@@ -164,20 +164,20 @@ export default function AdminSystemPage() {
               </p>
             )}
           </div>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-            <div className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-center">
+          <div className="grid w-full max-w-md grid-cols-3 gap-3 lg:w-[24rem] lg:max-w-none">
+            <div className="min-w-0 rounded-2xl border border-white/8 bg-black/20 px-3 py-3 text-center">
               <p className="text-[10px] uppercase tracking-wider text-white/35">Stripe</p>
               <p className={`mt-1 font-serif text-2xl tabular-nums ${readinessColor(stripeReady)}`}>
                 {loading ? "—" : `${stripeReady}%`}
               </p>
             </div>
-            <div className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-center">
+            <div className="min-w-0 rounded-2xl border border-white/8 bg-black/20 px-3 py-3 text-center">
               <p className="text-[10px] uppercase tracking-wider text-white/35">E-post</p>
               <p className={`mt-1 font-serif text-2xl tabular-nums ${readinessColor(emailReady)}`}>
                 {loading ? "—" : `${emailReady}%`}
               </p>
             </div>
-            <div className="col-span-2 flex items-center justify-center rounded-2xl bg-[#b85c38]/15 sm:col-span-1">
+            <div className="flex min-w-0 items-center justify-center rounded-2xl bg-[#b85c38]/15">
               <Activity size={36} className="text-[#d4a574]" />
             </div>
           </div>

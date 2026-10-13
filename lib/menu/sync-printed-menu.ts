@@ -169,6 +169,12 @@ export async function syncPrintedMenuForTenant(
         data: { active: false },
       });
     }
+  }, {
+    // The printed menu is intentionally synchronized atomically, but its
+    // sequential upserts/creates exceed Prisma's 5s interactive default on
+    // a remote Neon database.
+    maxWait: 10_000,
+    timeout: 60_000,
   });
 
   const productsDeactivated = await prisma.product.count({

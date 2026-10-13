@@ -23,9 +23,12 @@ import {
 } from "@/lib/kitchen/kds-v2";
 import { useToast } from "@/components/notifications/ToastProvider";
 import { playKitchenAlertSound } from "@/lib/notifications/sounds";
+import { useNow } from "@/components/admin/kitchen/useNow";
+import { getReadyCountdown } from "@/lib/pos/ready-countdown";
 
 type Props = {
   screenId: KitchenScreenId;
+  restaurantName: string;
 };
 
 const COLUMNS: { key: KdsColumnKey; label: string }[] = [
@@ -34,10 +37,11 @@ const COLUMNS: { key: KdsColumnKey; label: string }[] = [
   { key: "ready", label: "READY" },
 ];
 
-function KitchenKdsV2({ screenId }: Props) {
+function KitchenKdsV2({ screenId, restaurantName }: Props) {
   const { pushKitchenAlert } = useToast();
   const [layout, setLayout] = useState<Record<string, KdsColumnKey>>(() => loadKdsLayout());
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const now = useNow();
 
   const { orders, refresh, updateOrderLocally, setError } = useOrderPolling({
     search: "",
@@ -51,6 +55,7 @@ function KitchenKdsV2({ screenId }: Props) {
     updateOrderLocally,
     setError,
     confirmCancel: false,
+    restaurantName,
   });
 
   const filtered = useMemo(
@@ -110,6 +115,12 @@ function KitchenKdsV2({ screenId }: Props) {
           <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
             {ordersByColumn[column.key].map((order) => {
               const minutes = elapsedMinutes(order.createdAt);
+              const countdown = getReadyCountdown(
+                order.status,
+                order.confirmedAt,
+                order.estimatedReadyMinutes,
+                now
+              );
               const priority =
                 order.status === OrderStatus.NEW && minutes >= 12
                   ? "rush"
@@ -140,7 +151,7 @@ function KitchenKdsV2({ screenId }: Props) {
                   </ul>
                   <p className={`mt-3 flex items-center gap-1 text-sm ${timerClass(minutes)}`}>
                     <Clock size={14} />
-                    {minutes} min
+                    {countdown?.display ?? (order.status === OrderStatus.READY ? "KLAR" : `${minutes} min`)}
                   </p>
                 </article>
               );

@@ -8,6 +8,10 @@ import { isValidWaitTimeMinutes } from "@/lib/pos/wait-time";
 import { publishOrderUpdated } from "@/lib/realtime/publish";
 import { prisma } from "@/lib/prisma";
 import type { UpdateOrderStatusOptions } from "@/lib/orders/update-status";
+import {
+  assertValidOrderStatusTransition,
+  InvalidOrderStatusTransitionError,
+} from "@/lib/orders/status-transitions";
 
 type OrderWithRelations = Prisma.OrderGetPayload<{
   include: {
@@ -31,18 +35,28 @@ export async function confirmOrderWithWaitTime(
   });
   if (!existing) return null;
 
-  if (existing.status !== OrderStatus.NEW) {
-    throw new Error("Order is not in NEW status");
-  }
+  assertValidOrderStatusTransition(
+    existing.status,
+    OrderStatus.CONFIRMED,
+    existing.orderType
+  );
 
   const order = await prisma.$transaction(async (tx) => {
-    await tx.order.update({
-      where: { id: orderId },
+    const updated = await tx.order.updateMany({
+      where: { id: orderId, tenantId, status: existing.status },
       data: {
         status: OrderStatus.CONFIRMED,
         estimatedReadyMinutes: minutes,
       },
     });
+
+    if (updated.count !== 1) {
+      throw new InvalidOrderStatusTransitionError(
+        existing.status,
+        OrderStatus.CONFIRMED,
+        existing.orderType
+      );
+    }
 
     await tx.orderStatusHistory.create({
       data: { orderId, status: OrderStatus.CONFIRMED },

@@ -184,12 +184,23 @@ export async function GET(req: Request) {
         orderType: true,
         paymentMethod: true,
         paymentStatus: true,
+        payments: {
+          where: { businessId: tenantId, provider: "swish", method: PaymentMethod.SWISH, status: PaymentStatus.PAID },
+          select: { id: true },
+          take: 1,
+        },
         total: true,
         status: true,
         note: true,
         adminNote: true,
         estimatedReadyMinutes: true,
         createdAt: true,
+        statusHistory: {
+          where: { status: OrderStatus.CONFIRMED },
+          orderBy: { createdAt: "desc" },
+          take: 1,
+          select: { createdAt: true },
+        },
         items: {
           select: {
             id: true,
@@ -202,7 +213,14 @@ export async function GET(req: Request) {
       },
     });
 
-    return NextResponse.json(orders);
+    return NextResponse.json(
+      orders.map(({ statusHistory, payments, ...order }) => ({
+        ...order,
+        swishConfirmed: order.paymentMethod === PaymentMethod.SWISH &&
+          order.paymentStatus === PaymentStatus.PAID && payments.length > 0,
+        confirmedAt: statusHistory[0]?.createdAt.toISOString() ?? null,
+      }))
+    );
   } catch (error) {
     const apiError = tenantApiError(error);
     if (apiError) return apiError;

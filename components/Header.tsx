@@ -89,7 +89,7 @@ export default function Header() {
         <div className="site-header-inner mx-auto max-w-7xl px-[var(--content-px)]">
           <div className="site-header-grid">
             <Link href={homeHref} className="site-header-brand-link">
-              <BrandLogo size="header-desktop" priority href={undefined} />
+              <BrandLogo size="header-desktop" priority href="" />
               <span className="site-header-brand-copy">
                 <span className="site-header-brand-name">{restaurantName}</span>
                 <HeaderStatusChips isOpen={isOpen} />

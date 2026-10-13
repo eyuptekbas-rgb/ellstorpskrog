@@ -6,6 +6,7 @@ import {
   DEFAULT_TERMINAL_SETTINGS,
   loadTerminalSettings,
   RESTAURANT_STATUS_LABELS,
+  resolveReceiptVatRate,
   saveTerminalSettings,
   type RestaurantStatus,
   type TerminalSettings,
@@ -73,7 +74,13 @@ function RestaurantSettingsClient() {
         const nextSettings =
           data.rmsTerminalSettings &&
           typeof data.rmsTerminalSettings === "object"
-            ? ({ ...DEFAULT_TERMINAL_SETTINGS, ...data.rmsTerminalSettings } as TerminalSettings)
+            ? ({
+                ...DEFAULT_TERMINAL_SETTINGS,
+                ...data.rmsTerminalSettings,
+                receiptVatRate: resolveReceiptVatRate(
+                  data.rmsTerminalSettings.receiptVatRate
+                ),
+              } as TerminalSettings)
             : localSettings;
 
         const nextPrinters = Array.isArray(data.rmsPrinterRegistry)
@@ -193,6 +200,34 @@ function RestaurantSettingsClient() {
               </button>
             )
           )}
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-white/8 bg-[#141414] p-5">
+        <h2 className="font-serif text-xl text-white">Moms</h2>
+        <p className="mt-1 text-sm text-white/50">
+          Momssats för kundkvitton. Alla priser är inklusive moms.
+        </p>
+        <div className="mt-4 flex gap-2">
+          {([6, 12] as const).map((rate) => (
+            <button
+              key={rate}
+              type="button"
+              onClick={() =>
+                setSettings((current) => ({
+                  ...current,
+                  receiptVatRate: rate,
+                }))
+              }
+              className={`rounded-xl border px-5 py-2.5 text-sm font-semibold ${
+                settings.receiptVatRate === rate
+                  ? "border-[#b85c38]/35 bg-[#b85c38]/12 text-[#e8c4a8]"
+                  : "border-white/10 text-white/60"
+              }`}
+            >
+              {rate}%
+            </button>
+          ))}
         </div>
       </section>
 
