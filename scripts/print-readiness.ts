@@ -1,7 +1,11 @@
 import { getSystemStatus } from "../lib/system/status";
+import { prisma } from "../lib/prisma";
 
 async function main() {
-  const status = await getSystemStatus();
+  const slug = process.env.DEFAULT_TENANT_SLUG ?? "ellstorps-krog";
+  const tenant = await prisma.tenant.findUnique({ where: { slug }, select: { id: true } });
+  if (!tenant) throw new Error(`Default tenant "${slug}" not found`);
+  const status = await getSystemStatus(tenant.id);
   console.log(JSON.stringify({
     overall: status.readinessPercent,
     stripe: status.stripeReadinessPercent,
@@ -17,6 +21,5 @@ main()
     process.exit(1);
   })
   .finally(async () => {
-    const { prisma } = await import("../lib/prisma");
     await prisma.$disconnect();
   });
