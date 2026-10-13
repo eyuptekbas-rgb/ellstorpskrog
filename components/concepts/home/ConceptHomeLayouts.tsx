@@ -19,6 +19,7 @@ import DeliveryPickup from "@/components/home/DeliveryPickup";
 import FeaturedDishes from "@/components/home/FeaturedDishes";
 import HomeHero from "@/components/home/HomeHero";
 import HomeOpeningHours from "@/components/home/HomeOpeningHours";
+import PublicTableMap from "@/components/home/PublicTableMap";
 import QuickActions from "@/components/home/QuickActions";
 import Reviews from "@/components/home/Reviews";
 import { useReservation } from "@/components/ReservationProvider";
@@ -51,19 +52,18 @@ function BookingStrip({ compact = false }: { compact?: boolean }) {
   const tp = useTenantPublicPath();
 
   return (
-    <section
-      className={`px-[var(--content-px)] ${compact ? "py-6" : "py-[var(--section-py-mobile)] lg:py-[var(--section-py)]"}`}
-    >
+    <section className={`px-[var(--content-px)] ${compact ? "py-8 lg:py-12" : "py-10 lg:py-16"}`}>
+      <div className="mx-auto grid max-w-6xl gap-5 lg:grid-cols-2 lg:items-stretch">
       <div
         className={`card-premium mx-auto max-w-6xl overflow-hidden rounded-[var(--radius-card)] text-center ${
-          compact ? "px-5 py-8" : "px-8 py-12 sm:px-16 sm:py-16"
+          compact ? "px-5 py-8 lg:py-10" : "px-6 py-10 sm:px-12 lg:py-12"
         }`}
       >
         <p className="section-label mb-4">Bordsbokning</p>
         <h2 className="text-display text-2xl sm:text-4xl">
           Vill du äta hos oss?
         </h2>
-        <p className="text-body mx-auto mb-8 mt-3 max-w-md text-sm sm:text-base">
+        <p className="text-body mx-auto mb-6 mt-3 max-w-md text-sm sm:text-base">
           Boka bord för en avslappnad middag i vår restaurang.
         </p>
         <div className="flex flex-col justify-center gap-3 sm:flex-row">
@@ -71,10 +71,9 @@ function BookingStrip({ compact = false }: { compact?: boolean }) {
             <CalendarDays size={18} />
             Boka bord
           </button>
-          <Link href={tp("/kontakt")} className="btn-secondary">
-            Kontakta oss
-          </Link>
         </div>
+      </div>
+        <PublicTableMap />
       </div>
     </section>
   );
@@ -413,9 +412,9 @@ export function TraditionalHome(props: Props) {
       <HomeOpeningHours isOpen={props.isOpen} />
       <DeliveryPickup pickupEnabled={props.pickupEnabled} deliveryEnabled={props.deliveryEnabled} />
       <Reviews reviews={props.googleReviews} googleUrl={props.googleReviewsUrl ?? "https://www.google.com/maps/search/?api=1&query=Ellstorps+Kvarterskrog+Sallerupsv%C3%A4gen+28D+Malm%C3%B6"} />
-      <section className="hidden px-[var(--content-px)] pb-[var(--section-py)] lg:block">
-        <BookingStrip />
-      </section>
+      <div className="hidden lg:block">
+        <BookingStrip compact />
+      </div>
     </Shell>
   );
 }

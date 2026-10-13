@@ -37,8 +37,8 @@ export default function Footer() {
     <footer className="relative border-t border-[var(--brand-copper)]/20 bg-[var(--background)]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,color-mix(in_srgb,var(--brand-copper)_8%,transparent),transparent_55%)]" />
 
-      <div className="relative border-b border-white/[0.06]">
-        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-5 py-10 sm:flex-row sm:items-center sm:px-8 sm:py-12">
+      {false && <div className="hidden">
+        <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-6 px-5 py-8 sm:flex-row sm:items-center sm:px-8 sm:py-10">
           <div>
             <p className="section-label mb-2">{restaurantName}</p>
             <p className="font-serif text-2xl text-white sm:text-3xl">Redo att beställa?</p>
@@ -54,10 +54,9 @@ export default function Footer() {
             <FooterReservationButton />
           </div>
         </div>
-      </div>
-
-      <div className="relative mx-auto max-w-6xl px-5 pb-8 pt-12 sm:px-8">
-        <div className="flex flex-col gap-6 border-b border-white/8 pb-10 sm:flex-row sm:items-center sm:justify-between">
+      </div>}
+      <div className="relative mx-auto max-w-7xl px-5 pb-6 pt-9 sm:px-8 sm:pt-10">
+        <div className="flex flex-col gap-5 border-b border-white/8 pb-8 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-col gap-3">
             <BrandLogo size="footer" href={tp("/")} />
             {address && <p className="max-w-xs text-sm text-white/45">{address}</p>}
@@ -88,10 +87,10 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-10 py-10 text-sm sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 items-start gap-8 py-9 text-sm sm:grid-cols-2 lg:grid-cols-3 lg:gap-16">
           {address && (
             <div>
-              <div className="mb-4 flex items-center gap-2 text-[var(--brand-gold)]">
+              <div className="mb-5 flex items-center gap-2 text-[var(--brand-gold)]">
                 <MapPin size={16} />
                 <span className="text-xs font-semibold uppercase tracking-wider">Adress</span>
               </div>
@@ -111,7 +110,7 @@ export default function Footer() {
           )}
 
           <div>
-            <div className="mb-4 flex items-center gap-2 text-[var(--brand-gold)]">
+            <div className="mb-5 flex items-center gap-2 text-[var(--brand-gold)]">
               <Phone size={16} />
               <span className="text-xs font-semibold uppercase tracking-wider">Kontakt</span>
             </div>
@@ -136,7 +135,7 @@ export default function Footer() {
           </div>
 
           <div>
-            <div className="mb-4 flex items-center gap-2 text-[var(--brand-gold)]">
+            <div className="mb-5 flex items-center gap-2 text-[var(--brand-gold)]">
               <Clock size={16} />
               <span className="text-xs font-semibold uppercase tracking-wider">Öppettider</span>
             </div>
@@ -150,27 +149,9 @@ export default function Footer() {
             </ul>
           </div>
 
-          <div>
-            <div className="mb-4 flex items-center gap-2 text-[var(--brand-gold)]">
-              <CreditCard size={16} />
-              <span className="text-xs font-semibold uppercase tracking-wider">Betalning</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {[
-                { src: "/payments/visa.png", alt: "Visa", w: 34, h: 22 },
-                { src: "/payments/mastercard.png", alt: "Mastercard", w: 34, h: 22 },
-                { src: "/payments/applepay.png", alt: "Apple Pay", w: 34, h: 22 },
-                { src: "/payments/swish.png", alt: "Swish", w: 50, h: 38 },
-              ].map(({ src, alt, w, h }) => (
-                <div key={alt} className="rounded-lg bg-white px-2.5 py-1.5 shadow-sm">
-                  <Image src={src} alt={alt} width={w} height={h} />
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
 
-        <div className="flex flex-wrap gap-x-6 gap-y-2 pb-8 text-xs text-white/40">
+        <div className="flex max-w-7xl flex-wrap gap-x-8 gap-y-2 pb-6 text-xs text-white/40">
           <Link href={tp("/menu")} className="transition hover:text-[var(--brand-copper)]">
             Meny
           </Link>

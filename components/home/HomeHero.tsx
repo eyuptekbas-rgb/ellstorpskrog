@@ -6,6 +6,7 @@ import { ArrowRight, Phone, Star, UtensilsCrossed } from "lucide-react";
 import BrandLogo from "@/components/brand/BrandLogo";
 import { useTenantPublicPath } from "@/components/tenant/TenantPublicPathProvider";
 import { resolveHeroImage } from "@/lib/brand/images";
+import styles from "./HomeHero.module.css";
 
 type Props = {
   restaurantName: string;
@@ -28,6 +29,7 @@ export default function HomeHero({
 }: Props) {
   const tp = useTenantPublicPath();
   const src = resolveHeroImage(heroImage);
+  const restaurantPhoto = src === "/images/Ellstorps-Krog.png";
   const canOrder = pickupEnabled || deliveryEnabled;
 
   const statusChip = (
@@ -57,26 +59,28 @@ export default function HomeHero({
   );
 
   return (
-    <section className="relative flex min-h-[68dvh] items-end overflow-hidden lg:min-h-[100dvh]">
-      <div className="absolute inset-0">
+    <section className={`relative flex min-h-[68dvh] items-end overflow-hidden lg:min-h-[88dvh] ${restaurantPhoto ? styles.hero : ""}`}>
+      <div className={`absolute inset-0 ${restaurantPhoto ? styles.photo : ""}`}>
         <Image
           src={src}
-          alt={restaurantName}
+          alt={restaurantPhoto ? "Ellstorps Krog – fasad och uteservering i kvällsljus" : restaurantName}
           fill
           priority
           unoptimized={src.startsWith("http")}
-          className="object-cover hero-image-motion"
+          className={restaurantPhoto ? styles.image : "object-cover hero-image-motion"}
           sizes="100vw"
         />
       </div>
 
+      {restaurantPhoto ? <div className={styles.overlay} aria-hidden /> : <>
       <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] via-[#0f0f0f]/92 to-[#0f0f0f]/35" />
       <div className="absolute inset-0 bg-gradient-to-r from-[#0f0f0f]/98 via-[#0f0f0f]/55 to-transparent lg:via-[#0f0f0f]/40" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_70%_at_75%_35%,rgba(184,92,56,0.14),transparent)]" />
       <div className="brand-grain absolute inset-0 opacity-40" />
+      </>}
 
-      <div className="relative z-10 mx-auto w-full max-w-6xl px-[var(--content-px)] pb-8 pt-[var(--header-height-mobile)] lg:pb-28 lg:pt-[calc(var(--header-height)+4rem)]">
-        <div className="mb-5 hidden flex-wrap items-center gap-2 lg:mb-10 lg:flex lg:gap-3">
+      <div className={`relative z-10 mx-auto w-full max-w-6xl px-[var(--content-px)] pb-8 pt-[var(--header-height-mobile)] lg:pb-20 lg:pt-[calc(var(--header-height)+3rem)] ${restaurantPhoto ? styles.content : ""}`}>
+        <div className="mb-5 hidden flex-wrap items-center gap-2 lg:mb-7 lg:flex lg:gap-3">
           {statusChip}
           <div className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] font-medium text-white/80 lg:text-xs">
             <Star size={11} fill="currentColor" className="text-[#b85c38]" />
@@ -90,27 +94,27 @@ export default function HomeHero({
             aria-hidden
           />
 
-          <div className="min-w-0 flex-1 text-center lg:text-left">
-            <BrandLogo
+          <div className="min-w-0 flex-1 text-center lg:max-w-[52rem] lg:text-left">
+            {!restaurantPhoto && <BrandLogo
               size="home-hero"
               href={tp("/")}
               className="mx-auto lg:hidden"
               priority
-            />
+            />}
 
             <p className="section-label mb-2 lg:mb-5">
-              {restaurantName} · Malmö
+              {restaurantPhoto ? "Ellstorps Krog" : restaurantName} · Malmö
             </p>
 
-            <h1 className="text-display mx-auto max-w-[11ch] text-[2.35rem] leading-[1.06] text-white sm:text-5xl lg:mx-0 lg:max-w-[12ch] lg:text-[4.5rem]">
+            <h1 className="text-display mx-auto max-w-[11ch] text-[2.35rem] leading-[1.06] text-white sm:text-5xl lg:mx-0 lg:max-w-[13ch] lg:text-[4.5rem]">
               Smakrik mat,
               <span className="mt-1 block text-white lg:mt-2">
                 serverad med omsorg
               </span>
             </h1>
 
-            <p className="text-body mx-auto mt-3 max-w-md text-[0.9375rem] leading-snug text-white/60 sm:mt-6 sm:text-base lg:mx-0 lg:mt-8 lg:text-lg lg:leading-relaxed">
-              Pizza, kebab och husmanskost i hjärtat av Malmö. Beställ online
+            <p className="text-body mx-auto mt-3 max-w-md text-[0.9375rem] leading-snug text-white/60 sm:mt-6 sm:text-base lg:mx-0 lg:mt-6 lg:max-w-xl lg:text-lg lg:leading-relaxed">
+              Pizza, kebab och à la carte i hjärtat av Malmö. Beställ online
               eller besök oss för en kväll att minnas.
             </p>
 
@@ -151,11 +155,12 @@ export default function HomeHero({
               {phone}
             </a>
 
-            <div className="mt-10 hidden flex-wrap gap-10 border-t border-white/[0.08] pt-8 lg:flex">
+            <div className="mt-8 hidden max-w-2xl justify-between gap-8 border-t border-white/[0.08] pt-6 lg:flex">
               {[
-                { value: "35+", label: "År i Malmö" },
-                { value: "20 min", label: "Snabb avhämtning" },
+                { value: "20+", label: "År i Malmö" },
+                { value: "15–20 min", label: "Snabb avhämtning" },
                 { value: "100%", label: "Färska råvaror" },
+                { value: "10%", label: "Studentrabatt" },
               ].map((stat) => (
                 <div key={stat.label}>
                   <p className="font-serif text-2xl text-white sm:text-3xl">

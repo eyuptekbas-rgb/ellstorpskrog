@@ -1,0 +1,66 @@
+.hero {
+  background: #0f0f0f;
+}
+
+.hero .photo {
+  top: var(--header-height-mobile);
+  bottom: auto;
+  height: 250px;
+  pointer-events: none;
+}
+
+.image {
+  object-fit: cover;
+  object-position: 70% top;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent 160px, #0f0f0f 310px);
+}
+
+.hero .content {
+  padding-top: 275px;
+}
+
+.content :global(.text-body) {
+  color: rgb(255 255 255 / 78%);
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .hero .photo {
+    height: 330px;
+  }
+
+  .overlay {
+    background: linear-gradient(to bottom, transparent 230px, #0f0f0f 395px);
+  }
+
+  .hero .content {
+    padding-top: 350px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero .photo {
+    inset: var(--header-height) 0 0;
+    height: auto;
+  }
+
+  .image {
+    object-fit: contain;
+    object-position: right top;
+  }
+
+  .overlay {
+    background:
+      linear-gradient(to right, #0f0f0f 0%, rgb(15 15 15 / 94%) 25%, rgb(15 15 15 / 72%) 44%, rgb(15 15 15 / 12%) 70%),
+      linear-gradient(to top, #0f0f0f 0%, transparent 45%);
+  }
+
+  .hero .content {
+    padding-top: calc(var(--header-height) + 3rem);
+  }
+}
