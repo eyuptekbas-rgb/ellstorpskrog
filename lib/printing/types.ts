@@ -17,11 +17,14 @@ export type PrintableOrder = {
   orderType: OrderType;
   paymentMethod: PaymentMethod;
   paymentStatus: PaymentStatus;
+  /** Server-derived proof of a persisted PAID payment from the Swish provider. */
+  swishConfirmed?: boolean;
   note: string | null;
   adminNote: string | null;
   total: number;
   status: OrderStatus;
   estimatedReadyMinutes?: number | null;
+  confirmedAt?: string | null;
   createdAt: string;
   items: PrintableOrderItem[];
 };

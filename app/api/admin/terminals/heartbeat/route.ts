@@ -28,7 +28,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid terminal id" }, { status: 400 });
     }
 
-    const terminal = upsertTerminalHeartbeat(tenantId, {
+    const terminal = await upsertTerminalHeartbeat(tenantId, {
       id: body.id,
       name: typeof body.name === "string" ? body.name : "Terminal",
       location: typeof body.location === "string" ? body.location : "",

@@ -479,6 +479,10 @@ html.pos-terminal-mode #pos-main {
   color: var(--pro-orange);
 }
 
+.pos-pro-tile__timer--overdue {
+  color: #fca5a5;
+}
+
 /* ── Active order ── */
 
 .pos-pro-order {
@@ -584,6 +588,28 @@ html.pos-terminal-mode #pos-main {
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 28px;
+}
+
+.pos-pro-order__countdown {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.9rem;
+  border: 1px solid rgba(232, 196, 168, 0.25);
+  border-radius: 0.9rem;
+  padding: 0.65rem 0.85rem;
+  color: #e8c4a8;
+}
+
+.pos-pro-order__countdown strong {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 1.35rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.pos-pro-order__countdown--overdue {
+  border-color: rgba(248, 113, 113, 0.35);
+  color: #fca5a5;
 }
 
 .pos-pro-order__badge {

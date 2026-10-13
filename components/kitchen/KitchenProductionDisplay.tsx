@@ -66,6 +66,7 @@ function KitchenProductionDisplay() {
     updateOrderLocally,
     setError,
     confirmCancel: false,
+    restaurantName,
   });
 
   useEffect(() => {
@@ -181,7 +182,7 @@ function KitchenProductionDisplay() {
       {loading ? (
         <RmsLoadingState label="Hämtar köksordrar…" />
       ) : kdsV2 ? (
-        <KitchenKdsV2 screenId={activeScreen.id} />
+        <KitchenKdsV2 screenId={activeScreen.id} restaurantName={restaurantName} />
       ) : (
         <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-hidden p-4 lg:grid-cols-3 lg:p-5">
           {ordersByColumn.map((column) => (

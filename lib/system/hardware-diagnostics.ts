@@ -72,7 +72,7 @@ export async function collectHardwareDiagnostics(
   const freeMem = os.freemem();
   const totalMem = os.totalmem();
 
-  const terminals = tenantId ? listTerminals(tenantId) : [];
+  const terminals = tenantId ? await listTerminals(tenantId) : [];
   const online = terminals.filter((t) => t.online).length;
   const byKind = (kind: string) =>
     terminals.filter((t) => t.deviceKind === kind).length;

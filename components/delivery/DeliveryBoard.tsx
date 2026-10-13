@@ -1,21 +1,12 @@
 "use client";
 
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
-import { OrderStatus, OrderType } from "@prisma/client";
 import { MapPin, Truck, User, PackageOpen } from "lucide-react";
 import RmsEmptyState from "@/components/rms/RmsEmptyState";
 import RmsLoadingState from "@/components/rms/RmsLoadingState";
 import RealtimeStatusBadge from "@/components/rms/RealtimeStatusBadge";
 import { useOrderPolling } from "@/components/admin/orders/useOrderPolling";
-import {
-  assignDriver,
-  DELIVERY_STATUS_LABELS,
-  loadDeliveryQueue,
-  updateDeliveryStatus,
-  upsertDeliveryFromOrder,
-  type DeliveryAssignment,
-  type DeliveryStatus,
-} from "@/lib/delivery/queue";
+import { DELIVERY_STATUS_LABELS, type DeliveryAssignment, type DeliveryStatus } from "@/lib/delivery/queue";
 
 const DRIVERS = [
   { id: "d1", name: "Alex" },
@@ -32,20 +23,17 @@ function DeliveryBoard() {
 
   const [queue, setQueue] = useState<DeliveryAssignment[]>([]);
 
+  const loadQueue = useCallback(async () => {
+    const res = await fetch("/api/admin/delivery", { cache: "no-store" });
+    if (!res.ok) return;
+    const data = await res.json() as { deliveries?: DeliveryAssignment[] };
+    setQueue(data.deliveries ?? []);
+  }, []);
+
   useEffect(() => {
-    const deliveryOrders = orders.filter((o) => o.orderType === OrderType.DELIVERY);
-    for (const order of deliveryOrders) {
-      if (
-        order.status === OrderStatus.READY ||
-        order.status === OrderStatus.DELIVERING ||
-        order.status === OrderStatus.CONFIRMED ||
-        order.status === OrderStatus.PREPARING
-      ) {
-        upsertDeliveryFromOrder(order);
-      }
-    }
-    queueMicrotask(() => setQueue(loadDeliveryQueue()));
-  }, [orders]);
+    const task = window.setTimeout(() => void loadQueue(), 0);
+    return () => window.clearTimeout(task);
+  }, [orders, loadQueue]);
 
   const sorted = useMemo(
     () =>
@@ -55,17 +43,17 @@ function DeliveryBoard() {
     [queue]
   );
 
-  const handleAssign = useCallback((orderId: string, driverId: string) => {
+  const handleAssign = useCallback(async (orderId: string, driverId: string) => {
     const driver = DRIVERS.find((d) => d.id === driverId);
     if (!driver) return;
-    assignDriver(orderId, driver.id, driver.name);
-    setQueue(loadDeliveryQueue());
-  }, []);
+    await fetch("/api/admin/delivery", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ orderId, driverId: driver.id, driverName: driver.name }) });
+    await loadQueue();
+  }, [loadQueue]);
 
-  const handleStatus = useCallback((orderId: string, status: DeliveryStatus) => {
-    updateDeliveryStatus(orderId, status);
-    setQueue(loadDeliveryQueue());
-  }, []);
+  const handleStatus = useCallback(async (orderId: string, deliveryStatus: DeliveryStatus) => {
+    const res = await fetch("/api/admin/delivery", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ orderId, deliveryStatus }) });
+    if (res.ok) { await loadQueue(); await refresh(); }
+  }, [loadQueue, refresh]);
 
   return (
     <div className="flex h-dvh flex-col bg-[#070707] text-white">

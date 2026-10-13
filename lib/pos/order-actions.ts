@@ -11,10 +11,11 @@ export type PosStatusAction = {
 export function getPosStatusAction(
   order: AdminOrderListItem
 ): PosStatusAction | null {
-  if (
-    order.status === OrderStatus.CONFIRMED ||
-    order.status === OrderStatus.PREPARING
-  ) {
+  if (order.status === OrderStatus.CONFIRMED) {
+    return { label: "Tillagas", status: OrderStatus.PREPARING };
+  }
+
+  if (order.status === OrderStatus.PREPARING) {
     return { label: "Klar", status: OrderStatus.READY };
   }
 

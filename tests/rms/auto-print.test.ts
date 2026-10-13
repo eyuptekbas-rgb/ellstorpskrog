@@ -80,6 +80,54 @@ describe("print dedup", () => {
       false
     );
   });
+
+  it("tracks READY receipt separately from acceptance auto-print", async () => {
+    const storage = new Map<string, string>();
+    const previousWindow = globalThis.window;
+    const previousStorage = globalThis.localStorage;
+    Object.defineProperty(globalThis, "window", { value: {}, configurable: true });
+    Object.defineProperty(globalThis, "localStorage", {
+      value: {
+        getItem: (key: string) => storage.get(key) ?? null,
+        setItem: (key: string, value: string) => storage.set(key, value),
+        removeItem: (key: string) => storage.delete(key),
+        clear: () => storage.clear(),
+        key: () => null,
+        length: 0,
+      },
+      configurable: true,
+    });
+
+    try {
+      const {
+        hasAutoPrintCompleted,
+        hasReadyPrintCompleted,
+        markAutoPrintCompleted,
+        markReadyPrintCompleted,
+      } = await import("@/lib/printing/print-dedup");
+      const key = {
+        orderId: "ready-order",
+        role: "receipt" as const,
+        documentType: "receipt" as const,
+      };
+
+      markAutoPrintCompleted(key);
+      assert.equal(hasAutoPrintCompleted(key), true);
+      assert.equal(hasReadyPrintCompleted(key), false);
+
+      markReadyPrintCompleted(key);
+      assert.equal(hasReadyPrintCompleted(key), true);
+    } finally {
+      Object.defineProperty(globalThis, "window", {
+        value: previousWindow,
+        configurable: true,
+      });
+      Object.defineProperty(globalThis, "localStorage", {
+        value: previousStorage,
+        configurable: true,
+      });
+    }
+  });
 });
 
 describe("printer status", () => {

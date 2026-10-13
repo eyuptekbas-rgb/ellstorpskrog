@@ -17,6 +17,7 @@ import type { AdminOrderListItem } from "@/components/admin/orders/useOrderPolli
 import { useNow } from "@/components/admin/kitchen/useNow";
 import { printRoutedKitchenTicket } from "@/lib/printing/routing";
 import { toPrintableOrder } from "@/lib/pos/printable-order";
+import { getReadyCountdown } from "@/lib/pos/ready-countdown";
 
 type Props = {
   order: AdminOrderListItem;
@@ -70,6 +71,14 @@ function KitchenProductionCard({
   const urgency = getKitchenUrgency(order.createdAt, now);
   const flashing = shouldFlashOrder(order.createdAt, now);
   const isDelivery = order.orderType === OrderType.DELIVERY;
+  const countdown = getReadyCountdown(
+    order.status,
+    order.confirmedAt,
+    order.estimatedReadyMinutes,
+    now
+  );
+  const timerText = countdown?.display ??
+    (order.status === OrderStatus.READY ? "KLAR" : formatElapsedTimer(order.createdAt, now));
 
   const handlePrint = useCallback(() => {
     void printRoutedKitchenTicket(toPrintableOrder(order), restaurantName);
@@ -97,7 +106,7 @@ function KitchenProductionCard({
         <div
           className={`shrink-0 rounded-2xl px-3 py-2 text-center font-mono text-xl font-bold tabular-nums xl:text-2xl ${urgencyTimerClass(urgency)}`}
         >
-          {formatElapsedTimer(order.createdAt, now)}
+          {timerText}
         </div>
       </div>
 
