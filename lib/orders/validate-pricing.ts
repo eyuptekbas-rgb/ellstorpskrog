@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { ensureSiteSettings } from "@/lib/settings";
 import { matchDeliveryZone } from "@/lib/settings/utils";
 import type { OrderItemInput } from "@/lib/orders/create-order";
+import { findInvalidOptionGroup } from "@/lib/menu/option-group-validation";
 
 export type OrderItemPayload = {
   productId?: string;
@@ -70,6 +71,7 @@ export async function validateOrderPricing(
         category: { tenantId },
       },
       include: {
+        optionGroups: { include: { options: true } },
         category: {
           include: {
             extraOptions: {
@@ -87,16 +89,27 @@ export async function validateOrderPricing(
     const optionIds = [...new Set(item.selectedOptionIds ?? [])];
     let optionTotal = 0;
 
+    const invalidGroup = findInvalidOptionGroup(product.optionGroups, optionIds);
+    if (invalidGroup) {
+      throw new OrderPricingError(
+        invalidGroup.required
+          ? `Välj ett alternativ för ${invalidGroup.name}`
+          : `Ogiltigt antal val för ${invalidGroup.name}`
+      );
+    }
+
     if (optionIds.length > 0) {
-      const allowed = new Map(
-        product.category.extraOptions
-          .filter((row) => row.extraOption.active)
-          .map((row) => [row.extraOption.id, row.extraOption])
+      const allowed = new Map<string, { priceModifier: number }>();
+      product.category.extraOptions
+        .filter((row) => row.extraOption.active)
+        .forEach((row) => allowed.set(row.extraOption.id, row.extraOption));
+      product.optionGroups.forEach((group) =>
+        group.options.forEach((option) => allowed.set(option.id, option))
       );
 
       for (const optionId of optionIds) {
         const option = allowed.get(optionId);
-        if (!option || option.tenantId !== tenantId) {
+        if (!option) {
           throw new OrderPricingError("Invalid extra option for product");
         }
         optionTotal += option.priceModifier;
@@ -117,7 +130,6 @@ export async function validateOrderPricing(
   }
 
   let deliveryFee = 0;
-  let minimumOrder = settings.minimumOrder;
 
   if (orderType === OrderType.DELIVERY) {
     if (!settings.deliveryEnabled) {
@@ -131,15 +143,8 @@ export async function validateOrderPricing(
       throw new OrderPricingError("Address is outside delivery area");
     }
     deliveryFee = match.deliveryFee;
-    minimumOrder = match.minimumOrder;
   } else if (!settings.pickupEnabled) {
     throw new OrderPricingError("Pickup is not available");
-  }
-
-  if (minimumOrder > 0 && subtotal < minimumOrder) {
-    throw new OrderPricingError(
-      `Minimum order is ${minimumOrder} kr (excluding delivery fee)`
-    );
   }
 
   const total = subtotal + deliveryFee;

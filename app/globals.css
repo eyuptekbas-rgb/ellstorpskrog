@@ -647,7 +647,7 @@ h5 {
   text-overflow: ellipsis;
   white-space: nowrap;
   font-family: var(--font-playfair);
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 500;
   line-height: 1.1;
   color: #fff;
@@ -1422,7 +1422,7 @@ h5 {
   border-radius: 0.875rem;
   border: 1px solid color-mix(in srgb, var(--brand-copper) 22%, transparent);
   background: color-mix(in srgb, white 4%, transparent);
-  font-size: 1rem;
+  font-size: 1.125rem;
   font-weight: 700;
   color: color-mix(in srgb, white 88%, transparent);
   transition:
@@ -1660,6 +1660,9 @@ h5 {
   display: flex;
   align-items: center;
   gap: var(--menu-space-2);
+  width: 100%;
+  max-width: 48rem;
+  margin-inline: auto;
   padding: 0 var(--content-px) var(--menu-space-2);
 }
 
@@ -1704,34 +1707,7 @@ h5 {
   overflow-x: auto;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
-}
-
-.menu-category-nav__indicator {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  z-index: 0;
-  height: 2.75rem;
-  width: 0;
-  border-radius: var(--menu-radius-pill);
-  pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--brand-copper-light) 55%, var(--brand-copper)) 0%,
-    var(--brand-copper) 100%
-  );
-  box-shadow:
-    0 6px 16px -8px color-mix(in srgb, var(--brand-copper) 70%, transparent),
-    inset 0 1px 0 color-mix(in srgb, var(--menu-color-white) 16%, transparent);
-  transform: translate3d(0, -50%, 0);
-  transition: transform 0.28s var(--menu-ease-emphasized);
-  will-change: transform;
-}
-
-.menu-category-nav__track-pad {
-  flex-shrink: 0;
-  width: 0;
-  pointer-events: none;
+  scroll-padding-inline: var(--menu-space-2);
 }
 
 .menu-category-nav__track::-webkit-scrollbar {
@@ -1770,8 +1746,15 @@ h5 {
 
 .menu-category-nav__pill--active {
   border-color: transparent;
-  background: transparent;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--brand-copper-light) 55%, var(--brand-copper)) 0%,
+    var(--brand-copper) 100%
+  );
   color: var(--menu-text-primary);
+  box-shadow:
+    0 6px 16px -8px color-mix(in srgb, var(--brand-copper) 70%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--menu-color-white) 16%, transparent);
 }
 
 .menu-category-nav__emoji {
@@ -1782,6 +1765,24 @@ h5 {
 .menu-category-nav__pill:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--brand-copper) 65%, transparent);
   outline-offset: 2px;
+}
+
+@media (min-width: 768px) {
+  .menu-category-nav__inner {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--menu-space-1-5);
+  }
+
+  .menu-category-nav__track {
+    display: contents;
+  }
+
+  .menu-category-nav__pill {
+    flex: 0 1 auto;
+    padding-inline: var(--menu-space-3);
+  }
+
 }
 
 .menu-pro-section + .menu-pro-section {
@@ -2076,7 +2077,7 @@ h5 {
 
 .menu-product-card__title {
   font-family: var(--font-playfair), serif;
-  font-size: 1rem;
+  font-size: 1.125rem;
   font-weight: 600;
   line-height: 1.2;
   color: var(--menu-text-primary);
@@ -2778,4 +2779,3 @@ h5 {
   max-width: 12rem;
   word-break: break-word;
 }
-

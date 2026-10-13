@@ -13,14 +13,28 @@ const pwaOptions = {
   sw: "sw.js",
   reloadOnOnline: true,
   cacheOnFrontEndNav: true,
-  aggressiveFrontEndNavCaching: true,
+  aggressiveFrontEndNavCaching: false,
   fallbacks: {
     document: "/offline",
   },
   workboxOptions: {
     disableDevLogs: true,
     navigateFallback: "/offline",
-    navigateFallbackDenylist: [/^\/admin/, /^\/api/, /^\/checkout/],
+    navigateFallbackDenylist: [
+      /^\/admin/,
+      /^\/api/,
+      /^\/checkout/,
+      /^\/login/,
+      /^\/konto/,
+      /^\/pos/,
+      /^\/kitchen/,
+      /^\/delivery/,
+      /^\/platform/,
+      /^\/faktura/,
+      /^\/order/,
+      /^\/customer-display/,
+      /^\/reservation/,
+    ],
     runtimeCaching: [
       {
         urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
@@ -58,7 +72,7 @@ const pwaOptions = {
         options: {
           cacheName: "settings-api",
           expiration: { maxEntries: 1, maxAgeSeconds: 24 * 60 * 60 },
-          cacheableResponse: { statuses: [0, 200] },
+          cacheableResponse: { statuses: [200] },
         },
       },
       {
@@ -66,12 +80,12 @@ const pwaOptions = {
         handler: "NetworkFirst" as const,
         options: {
           cacheName: "offline-pages",
-          networkTimeoutSeconds: 5,
+          networkTimeoutSeconds: 8,
           expiration: {
             maxEntries: 10,
             maxAgeSeconds: 7 * 24 * 60 * 60,
           },
-          cacheableResponse: { statuses: [0, 200] },
+          cacheableResponse: { statuses: [200] },
         },
       },
       {

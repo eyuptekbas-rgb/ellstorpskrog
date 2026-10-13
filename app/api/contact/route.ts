@@ -1,5 +1,4 @@
-import { getResendClient, isEmailConfigured } from "@/lib/email/resend";
-import { escapeHtml } from "@/lib/email/escape-html";
+import { PublicFormEmailConfigError, sendContactEmail } from "@/lib/email/public-forms";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
@@ -12,49 +11,29 @@ export async function POST(req: Request) {
       });
     }
 
-    if (!isEmailConfigured()) {
-      return new Response(
-        JSON.stringify({ error: "Email service not configured" }),
-        { status: 503 }
-      );
-    }
-
-    const resend = getResendClient();
-    if (!resend) {
-      return new Response(
-        JSON.stringify({ error: "Email service not configured" }),
-        { status: 503 }
-      );
-    }
     const body = await req.json();
-    const { name, email, message } = body;
+    const { name, email, message } = body ?? {};
 
-    if (!name || !email || !message) {
+    if (![name, email, message].every(value => typeof value === "string" && value.trim())) {
       return new Response(
         JSON.stringify({ error: "Missing fields" }),
         { status: 400 }
       );
     }
 
-    const safeName = escapeHtml(String(name));
-    const safeEmail = escapeHtml(String(email));
-    const safeMessage = escapeHtml(String(message)).replace(/\n/g, "<br/>");
-
-    await resend.emails.send({
-      from: "Ellstorps Krog <no-reply@ellstorpskrog.se>",
-      to: [process.env.CONTACT_TO_EMAIL!],
-      replyTo: email,
-      subject: "Ny besked fra kontaktformular",
-      html: `
-        <p><strong>Navn:</strong> ${safeName}</p>
-        <p><strong>Email:</strong> ${safeEmail}</p>
-        <p><strong>Besked:</strong></p>
-        <p>${safeMessage}</p>
-      `,
-    });
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      return Response.json({ error: "Invalid email" }, { status: 400 });
+    }
+    await sendContactEmail({ name: name.trim(), email: email.trim(), message: message.trim() });
 
     return new Response(JSON.stringify({ success: true }), { status: 200 });
   } catch (error) {
+    if (error instanceof SyntaxError) {
+      return Response.json({ error: "Invalid JSON" }, { status: 400 });
+    }
+    if (error instanceof PublicFormEmailConfigError) {
+      return Response.json({ error: "Email service not configured" }, { status: 503 });
+    }
     console.error(error);
     return new Response(
       JSON.stringify({ error: "Failed to send email" }),

@@ -61,6 +61,7 @@ export type CreateReservationInput = {
   date: string;
   time: string;
   comment?: string;
+  tableId?: string;
 };
 
 export function validateReservationInput(body: Partial<CreateReservationInput>) {
@@ -71,6 +72,7 @@ export function validateReservationInput(body: Partial<CreateReservationInput>) 
   const time = body.time?.trim();
   const guestCount = Number(body.guestCount);
   const comment = body.comment?.trim() || null;
+  const tableId = body.tableId?.trim() || null;
 
   if (!name || !phone || !email || !date || !time) {
     return { ok: false as const, error: "Alla obligatoriska fält måste fyllas i." };
@@ -108,6 +110,6 @@ export function validateReservationInput(body: Partial<CreateReservationInput>) 
 
   return {
     ok: true as const,
-    data: { name, phone, email, guestCount, date, time, comment },
+    data: { name, phone, email, guestCount, date, time, comment, tableId },
   };
 }

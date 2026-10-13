@@ -36,7 +36,7 @@ export default function CustomerLoginForm() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-md px-[var(--content-px)] pb-[calc(var(--bottom-nav-height)+var(--bottom-nav-fab-overflow)+env(safe-area-inset-bottom,0px)+1.5rem)] pt-[calc(var(--header-height-mobile)+1.5rem)] lg:hidden">
+    <div className="mx-auto w-full max-w-md px-[var(--content-px)] pb-[calc(var(--bottom-nav-height)+var(--bottom-nav-fab-overflow)+env(safe-area-inset-bottom,0px)+1.5rem)] pt-[calc(var(--header-height-mobile)+1.5rem)]">
       <div className="mb-8">
         <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#b85c38]">
           Konto

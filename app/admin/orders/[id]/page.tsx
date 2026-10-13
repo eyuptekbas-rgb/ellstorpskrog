@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { getAdminTenantId } from "@/lib/tenant/admin-api";
 import { ensureSiteSettings } from "@/lib/settings";
 import { getDbErrorMessage, isPrismaConnectionError } from "@/lib/db/errors";
 import {
@@ -26,15 +27,21 @@ type Props = {
 
 export default async function OrderDetailPage({ params }: Props) {
   const { id } = await params;
+  const tenantId = await getAdminTenantId();
 
   let order;
   let restaurantName = "Ellstorps Krog";
+  let receiptVatRate: 6 | 12 = 12;
 
   try {
     const [orderResult, settings] = await Promise.all([
-      prisma.order.findUnique({
-        where: { id },
+      prisma.order.findFirst({
+        where: { id, tenantId },
         include: {
+          payments: {
+            where: { businessId: tenantId, provider: "swish", method: "SWISH", status: "PAID" },
+            select: { businessId: true },
+          },
           items: { orderBy: { productName: "asc" } },
           statusHistory: { orderBy: { createdAt: "desc" } },
         },
@@ -44,6 +51,13 @@ export default async function OrderDetailPage({ params }: Props) {
 
     order = orderResult;
     restaurantName = settings.restaurantName;
+    receiptVatRate =
+      settings.rmsTerminalSettings &&
+      typeof settings.rmsTerminalSettings === "object" &&
+      !Array.isArray(settings.rmsTerminalSettings) &&
+      settings.rmsTerminalSettings.receiptVatRate === 6
+        ? 6
+        : 12;
   } catch (error) {
     if (isPrismaConnectionError(error)) {
       return (
@@ -65,6 +79,11 @@ export default async function OrderDetailPage({ params }: Props) {
   }
 
   if (!order) notFound();
+  const swishConfirmed = order.paymentMethod === "SWISH" &&
+    order.paymentStatus === "PAID" && order.payments.length > 0;
+  const swishUnconfirmed = order.paymentMethod === "SWISH" &&
+    !swishConfirmed;
+  const paymentStatus = swishUnconfirmed && order.paymentStatus === "PAID" ? "PENDING" : order.paymentStatus;
 
   const printOrder = {
     orderNumber: order.orderNumber,
@@ -74,12 +93,17 @@ export default async function OrderDetailPage({ params }: Props) {
     customerAddress: order.customerAddress,
     orderType: order.orderType,
     paymentMethod: order.paymentMethod,
-    paymentStatus: order.paymentStatus,
+    paymentStatus,
+    swishConfirmed,
     note: order.note,
     adminNote: order.adminNote,
     total: order.total,
     status: order.status,
     estimatedReadyMinutes: order.estimatedReadyMinutes,
+    confirmedAt:
+      order.statusHistory
+        .find((entry) => entry.status === "CONFIRMED")
+        ?.createdAt.toISOString() ?? null,
     createdAt: order.createdAt.toISOString(),
     items: order.items.map((item) => ({
       productName: item.productName,
@@ -120,11 +144,15 @@ export default async function OrderDetailPage({ params }: Props) {
             {STATUS_LABELS[order.status]}
           </span>
           <span
-            className={`text-xs font-medium px-3 py-1.5 rounded-full ${paymentStatusStyle(order.paymentStatus)}`}
+            className={`text-xs font-medium px-3 py-1.5 rounded-full ${paymentStatusStyle(paymentStatus)}`}
           >
-            {PAYMENT_STATUS_LABELS[order.paymentStatus]}
+            {PAYMENT_STATUS_LABELS[paymentStatus]}
           </span>
-          <OrderPrintButton order={printOrder} restaurantName={restaurantName} />
+          <OrderPrintButton
+            order={printOrder}
+            restaurantName={restaurantName}
+            vatRate={receiptVatRate}
+          />
         </div>
       </div>
 
@@ -176,11 +204,11 @@ export default async function OrderDetailPage({ params }: Props) {
             </div>
             <div>
               <p className="text-white/40 text-xs">Betalning</p>
-              <p>{PAYMENT_LABELS[order.paymentMethod]}</p>
+              <p>{swishUnconfirmed ? "Ej bekräftad" : PAYMENT_LABELS[order.paymentMethod]}</p>
             </div>
             <div>
               <p className="text-white/40 text-xs">Betalstatus</p>
-              <p>{PAYMENT_STATUS_LABELS[order.paymentStatus]}</p>
+              <p>{PAYMENT_STATUS_LABELS[paymentStatus]}</p>
             </div>
             <div>
               <p className="text-white/40 text-xs">Totalt</p>

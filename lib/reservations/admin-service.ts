@@ -14,6 +14,8 @@ const tableSelect = {
   id: true,
   name: true,
   capacity: true,
+  positionX: true,
+  positionY: true,
   mergeGroupId: true,
   sortOrder: true,
   active: true,
@@ -138,6 +140,8 @@ export async function updateRestaurantTable(
     capacity: number;
     active: boolean;
     mergeGroupId: string | null;
+    positionX: number | null;
+    positionY: number | null;
     sortOrder: number;
   }>
 ): Promise<AdminTableRow | null> {
