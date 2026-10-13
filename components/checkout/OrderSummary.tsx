@@ -9,8 +9,6 @@ type Props = {
   totalPrice: number;
   orderType: OrderType;
   zoneName: string | null;
-  minimumOrder: number;
-  belowMinimum: boolean;
 };
 
 export default function OrderSummary({
@@ -20,8 +18,6 @@ export default function OrderSummary({
   totalPrice,
   orderType,
   zoneName,
-  minimumOrder,
-  belowMinimum,
 }: Props) {
   const sortedCart = sortCartByMenuOrder(cart);
 
@@ -106,12 +102,6 @@ export default function OrderSummary({
             </div>
           )}
         </div>
-
-        {belowMinimum && minimumOrder > 0 && (
-          <p className="mt-4 rounded-xl border border-amber-500/20 bg-amber-500/10 px-3.5 py-2.5 text-xs text-amber-200">
-            Minsta order: {minimumOrder} kr — du har {subtotal} kr
-          </p>
-        )}
 
         <div className="mt-5 flex items-end justify-between rounded-2xl border border-white/[0.06] bg-black/20 px-4 py-4">
           <span className="text-sm font-medium text-white/55">
