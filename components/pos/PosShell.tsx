@@ -47,7 +47,7 @@ type AdminContext = {
 
 export default function PosShell({ children }: { children: React.ReactNode }) {
   const [context, setContext] = useState<AdminContext | null>(null);
-  const [configReady, setConfigReady] = useState(false);
+  const [configReady, setConfigReady] = useState(isPosEmergencyDebug);
 
   useEffect(() => {
     posDebugLog("POS SHELL MOUNT");

@@ -9,6 +9,7 @@ export type TerminalSettings = {
   autoPrintKitchen: boolean;
   autoPrintReceipt: boolean;
   defaultFullscreen: boolean;
+  receiptVatRate: 6 | 12;
 };
 
 const STORAGE_KEY = "rms-terminal-settings";
@@ -22,14 +23,24 @@ export const DEFAULT_TERMINAL_SETTINGS: TerminalSettings = {
   autoPrintKitchen: true,
   autoPrintReceipt: false,
   defaultFullscreen: false,
+  receiptVatRate: 12,
 };
+
+export function resolveReceiptVatRate(value: unknown): 6 | 12 {
+  return value === 6 ? 6 : 12;
+}
 
 export function loadTerminalSettings(): TerminalSettings {
   if (typeof window === "undefined") return DEFAULT_TERMINAL_SETTINGS;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return DEFAULT_TERMINAL_SETTINGS;
-    return { ...DEFAULT_TERMINAL_SETTINGS, ...JSON.parse(raw) };
+    const parsed = JSON.parse(raw) as Partial<TerminalSettings>;
+    return {
+      ...DEFAULT_TERMINAL_SETTINGS,
+      ...parsed,
+      receiptVatRate: resolveReceiptVatRate(parsed.receiptVatRate),
+    };
   } catch {
     return DEFAULT_TERMINAL_SETTINGS;
   }

@@ -30,6 +30,8 @@ import {
 type Props = {
   open: boolean;
   onClose: () => void;
+  selectedTableId: string | null;
+  onTableChange: (id: string | null) => void;
 };
 
 const inputClass =
@@ -170,7 +172,7 @@ function BookingSummary({
   );
 }
 
-export default function ReservationModal({ open, onClose }: Props) {
+export default function ReservationModal({ open, onClose, selectedTableId, onTableChange }: Props) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const customDateRef = useRef<HTMLInputElement>(null);
   const [step, setStep] = useState<ReservationStep>(1);
@@ -184,6 +186,7 @@ export default function ReservationModal({ open, onClose }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [tables, setTables] = useState<{ id: string; name: string; capacity: number }[]>([]);
 
   const minDate = toLocalDateString(new Date());
   const dateOptions = useMemo(() => getReservationDateOptions(8), []);
@@ -225,6 +228,7 @@ export default function ReservationModal({ open, onClose }: Props) {
 
   useEffect(() => {
     if (!open) return;
+    void fetch("/api/public/tables").then((r) => r.ok ? r.json() : []).then(setTables);
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") resetAndClose();
@@ -269,6 +273,7 @@ export default function ReservationModal({ open, onClose }: Props) {
           time,
           guestCount,
           comment: comment.trim() || undefined,
+          tableId: selectedTableId || undefined,
         }),
       });
 
@@ -824,6 +829,12 @@ export default function ReservationModal({ open, onClose }: Props) {
                   {error}
                 </div>
               )}
+              <label className="mb-3 block text-sm text-white/70 lg:hidden">Valt bord
+                <select value={selectedTableId ?? ""} onChange={(e) => onTableChange(e.target.value || null)} className={`${inputClass} mt-1`}>
+                    <option value="" className="bg-white text-black">Låt restaurangen välja bord</option>
+                    {tables.map((table) => <option className="bg-white text-black" key={table.id} value={table.id}>{table.name} · {table.capacity} platser</option>)}
+                </select>
+              </label>
 
               {/* Mobile step flow */}
               <div className="lg:hidden">{mobileStepContent}</div>
@@ -841,6 +852,12 @@ export default function ReservationModal({ open, onClose }: Props) {
                   time={time}
                   guestCount={guestCount}
                 />
+                <label className="block text-sm text-white/70">Bord
+                  <select value={selectedTableId ?? ""} onChange={(e) => onTableChange(e.target.value || null)} className={`${inputClass} mt-1`}>
+                    <option value="" className="bg-white text-black">Välj bord senere</option>
+                  {tables.map((table) => <option className="bg-white text-black" key={table.id} value={table.id}>{table.name} · {table.capacity} platser</option>)}
+                  </select>
+                </label>
                 {dateField("-desktop")}
                 {timeField}
                 {guestField}

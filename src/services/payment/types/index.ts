@@ -61,6 +61,7 @@ export type UpdatePaymentDTO = {
 };
 
 export type PaymentRequest = {
+  swishPayerPhone?: string;
   orderId: string;
   businessId: string;
   method: PaymentMethod;

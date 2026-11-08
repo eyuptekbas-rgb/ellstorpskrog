@@ -6,6 +6,8 @@ import { requireStaffSession } from "@/lib/auth/require-staff";
 import { isPrismaConnectionError } from "@/lib/db/errors";
 import { prisma } from "@/lib/prisma";
 import { validateReservationInput } from "@/lib/reservations";
+import { saveAndNotifyReservation } from "@/lib/reservations/submit";
+import { PublicFormEmailConfigError } from "@/lib/email/public-forms";
 import { getAdminTenantId, tenantApiError } from "@/lib/tenant/admin-api";
 import { resolvePublicTenantId } from "@/lib/tenant/resolve";
 
@@ -18,6 +20,12 @@ export async function POST(req: Request) {
     if (!parsed.ok) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
+    if (parsed.data.tableId) {
+      const table = await prisma.restaurantTable.findFirst({ where: { id: parsed.data.tableId, tenantId, active: true } });
+      if (!table || table.capacity < parsed.data.guestCount) {
+        return NextResponse.json({ error: "Valt bord är inte tillgängligt." }, { status: 400 });
+      }
+    }
 
     const session = await auth();
     const customerUserId =
@@ -25,17 +33,20 @@ export async function POST(req: Request) {
         ? session.user.id
         : null;
 
-    const reservation = await prisma.reservation.create({
+    const reservation = await saveAndNotifyReservation(parsed.data, () => prisma.reservation.create({
       data: {
         tenantId,
         ...parsed.data,
         userId: customerUserId,
         status: ReservationStatus.NEW,
       },
-    });
+    }));
 
     return NextResponse.json(reservation, { status: 201 });
   } catch (error) {
+    if (error instanceof PublicFormEmailConfigError) {
+      return NextResponse.json({ error: "Bokningstjänsten är inte tillgänglig just nu. Försök igen senare." }, { status: 503 });
+    }
     if (isPrismaConnectionError(error)) {
       return NextResponse.json(
         { error: "Databasen är inte tillgänglig just nu." },

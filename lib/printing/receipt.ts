@@ -3,10 +3,12 @@ import type { EscPosPrintContext } from "./escpos-context";
 import { encodeKitchenTicket } from "./escpos/kitchen-ticket";
 import {
   buildDefaultRestaurantInfo,
+  buildCustomerReceiptPaymentInfo,
   buildReceiptPaymentInfo,
   encodeReceipt,
 } from "./escpos/receipt";
 import type { PrintableOrder, PrintDocument } from "./types";
+import { loadTerminalSettings } from "@/lib/rms/settings";
 
 export type ReceiptBuildOptions = EscPosPrintContext & {
   restaurantName: string;
@@ -23,9 +25,9 @@ export function buildReceiptDocument(
     name: options.restaurant?.name ?? restaurantName,
   };
 
-  const payment = buildReceiptPaymentInfo(order);
-  if (options.swishReference) payment.swishReference = options.swishReference;
-  if (options.cardReference) payment.cardReference = options.cardReference;
+  const payment = buildCustomerReceiptPaymentInfo(order);
+  if (payment && order.paymentMethod === "SWISH" && options.swishReference) payment.swishReference = options.swishReference;
+  if (payment && options.cardReference) payment.cardReference = options.cardReference;
 
   const escpos = encodeReceipt({
     order,
@@ -34,6 +36,7 @@ export function buildReceiptDocument(
     cashier: options.cashier,
     tableLabel: options.tableLabel,
     discountTotal: options.discountTotal,
+    vatRate: options.vatRate ?? loadTerminalSettings().receiptVatRate,
   });
 
   return {

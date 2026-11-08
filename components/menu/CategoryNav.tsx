@@ -12,89 +12,20 @@ type Props = {
   onQuickJump: () => void;
 };
 
-function prefersReducedMotion() {
-  return (
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  );
-}
-
 const CategoryNav = forwardRef<HTMLElement, Props>(function CategoryNav(
   { categories, activeCategoryId, onSelect, onQuickJump },
   ref
 ) {
   const trackRef = useRef<HTMLDivElement>(null);
-  const indicatorRef = useRef<HTMLSpanElement>(null);
-  const activeCategoryIdRef = useRef(activeCategoryId);
-
-  useEffect(() => {
-    activeCategoryIdRef.current = activeCategoryId;
-  }, [activeCategoryId]);
 
   useEffect(() => {
     const track = trackRef.current;
     if (!track) return;
-
-    const pads = Array.from(
-      track.querySelectorAll<HTMLElement>(".menu-category-nav__track-pad")
+    const active = track.querySelector<HTMLElement>(
+      `[data-category-id="${activeCategoryId}"]`
     );
-
-    const syncTrackPads = () => {
-      const half = track.clientWidth / 2;
-      for (const pad of pads) {
-        pad.style.width = `${half}px`;
-      }
-    };
-
-    syncTrackPads();
-    const resizeObserver = new ResizeObserver(syncTrackPads);
-    resizeObserver.observe(track);
-
-    let alive = true;
-    let rafId = 0;
-
-    const centerActiveChip = () => {
-      if (!alive) return;
-
-      const active = track.querySelector<HTMLElement>(
-        `[data-category-id="${activeCategoryIdRef.current}"]`
-      );
-      if (active) {
-        const indicator = indicatorRef.current;
-        if (indicator) {
-          indicator.style.width = `${active.offsetWidth}px`;
-          indicator.style.transform = `translate3d(${active.offsetLeft}px, -50%, 0)`;
-        }
-
-        const trackRect = track.getBoundingClientRect();
-        const btnRect = active.getBoundingClientRect();
-        const targetLeft =
-          track.scrollLeft +
-          (btnRect.left - trackRect.left - trackRect.width / 2 + btnRect.width / 2);
-        const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
-        const clamped = Math.min(Math.max(0, targetLeft), maxScroll);
-        const delta = clamped - track.scrollLeft;
-
-        if (Math.abs(delta) < 0.5) {
-          track.scrollLeft = clamped;
-        } else if (prefersReducedMotion()) {
-          track.scrollLeft = clamped;
-        } else {
-          track.scrollLeft += delta * 0.24;
-        }
-      }
-
-      rafId = window.requestAnimationFrame(centerActiveChip);
-    };
-
-    rafId = window.requestAnimationFrame(centerActiveChip);
-
-    return () => {
-      alive = false;
-      window.cancelAnimationFrame(rafId);
-      resizeObserver.disconnect();
-    };
-  }, [categories]);
+    active?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+  }, [activeCategoryId, categories]);
 
   /*
    * Accessibility: semantic in-page navigation (not tabs).
@@ -118,12 +49,6 @@ const CategoryNav = forwardRef<HTMLElement, Props>(function CategoryNav(
         </button>
 
         <div ref={trackRef} className="menu-category-nav__track">
-          <span
-            ref={indicatorRef}
-            className="menu-category-nav__indicator"
-            aria-hidden
-          />
-          <span className="menu-category-nav__track-pad" aria-hidden />
           {categories.map((category) => {
           const isActive = activeCategoryId === category.id;
           return (
@@ -142,7 +67,6 @@ const CategoryNav = forwardRef<HTMLElement, Props>(function CategoryNav(
             </button>
           );
           })}
-          <span className="menu-category-nav__track-pad" aria-hidden />
         </div>
       </div>
     </nav>

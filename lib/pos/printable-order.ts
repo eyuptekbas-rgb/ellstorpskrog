@@ -10,12 +10,15 @@ export function toPrintableOrder(order: AdminOrderListItem): PrintableOrder {
     customerAddress: order.customerAddress,
     orderType: order.orderType,
     paymentMethod: order.paymentMethod,
-    paymentStatus: order.paymentStatus,
+    paymentStatus: order.paymentMethod === "SWISH" && order.swishConfirmed !== true &&
+      order.paymentStatus === "PAID" ? "PENDING" : order.paymentStatus,
+    swishConfirmed: order.swishConfirmed === true,
     note: order.note,
     adminNote: order.adminNote,
     total: order.total,
     status: order.status,
     estimatedReadyMinutes: order.estimatedReadyMinutes,
+    confirmedAt: order.confirmedAt,
     createdAt: order.createdAt,
     items: order.items,
   };

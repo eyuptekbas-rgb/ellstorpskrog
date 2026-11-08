@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import { OrderType } from "@prisma/client";
+import { OrderStatus, OrderType } from "@prisma/client";
 import {
   formatPosQueueNumber,
   formatWaitingTimer,
@@ -11,6 +11,7 @@ import {
   type PosQueueColumnOrders,
 } from "@/lib/pos/queue-columns";
 import type { AdminOrderListItem } from "@/components/admin/orders/useOrderPolling";
+import { getReadyCountdown } from "@/lib/pos/ready-countdown";
 import { IconDelivery, IconPickup } from "./PosProIcons";
 
 type Props = {
@@ -33,6 +34,12 @@ function QueueTile({
 }) {
   const delivery = order.orderType === OrderType.DELIVERY;
   const TypeIcon = delivery ? IconDelivery : IconPickup;
+  const countdown = getReadyCountdown(
+    order.status,
+    order.confirmedAt,
+    order.estimatedReadyMinutes,
+    nowMs
+  );
 
   return (
     <button
@@ -56,9 +63,15 @@ function QueueTile({
         </span>
       </div>
       <span className="pos-pro-tile__name">{order.customerName}</span>
-      <span className="pos-pro-tile__timer">
-        {formatWaitingTimer(order.createdAt, nowMs)}
-      </span>
+      {countdown ? (
+        <span className={`pos-pro-tile__timer${countdown.overdue ? " pos-pro-tile__timer--overdue" : ""}`}>
+          {countdown.display}
+        </span>
+      ) : order.status === OrderStatus.NEW ? (
+        <span className="pos-pro-tile__timer">
+          {formatWaitingTimer(order.createdAt, nowMs)}
+        </span>
+      ) : null}
     </button>
   );
 }

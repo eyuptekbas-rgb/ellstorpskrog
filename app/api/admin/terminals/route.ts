@@ -7,7 +7,7 @@ export async function GET() {
   try {
     await requirePermission("settings");
     const tenantId = await getAdminTenantId();
-    return NextResponse.json({ terminals: listTerminals(tenantId) });
+    return NextResponse.json({ terminals: await listTerminals(tenantId) });
   } catch (error) {
     const apiError = tenantApiError(error);
     if (apiError) return apiError;

@@ -9,6 +9,7 @@ export type EscPosPrintContext = {
   discountTotal?: number;
   stationName?: string;
   preparationMinutes?: number;
+  vatRate?: 6 | 12;
 };
 
 export const DEFAULT_THANK_YOU = "Tack för ditt besök!";

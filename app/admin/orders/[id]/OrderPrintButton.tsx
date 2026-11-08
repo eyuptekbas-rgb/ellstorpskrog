@@ -8,11 +8,13 @@ import type { PrintableOrder } from "@/lib/orders/print";
 type Props = {
   order: PrintableOrder;
   restaurantName?: string;
+  vatRate?: 6 | 12;
 };
 
 export default function OrderPrintButton({
   order,
   restaurantName = "Ellstorps Krog",
+  vatRate = 12,
 }: Props) {
   const [busy, setBusy] = useState<"kitchen" | "receipt" | null>(null);
 
@@ -28,7 +30,7 @@ export default function OrderPrintButton({
   async function handleReceiptPrint() {
     setBusy("receipt");
     try {
-      await printReceipt(order, restaurantName);
+      await printReceipt(order, restaurantName, { vatRate });
     } finally {
       setBusy(null);
     }

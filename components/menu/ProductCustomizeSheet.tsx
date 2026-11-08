@@ -8,6 +8,7 @@ import {
   type CartItemOption,
 } from "@/lib/cart";
 import type { MenuProduct } from "@/lib/menu";
+import { findInvalidOptionGroup } from "@/lib/menu/option-group-validation";
 
 /**
  * Matches all elements reachable via Tab.
@@ -136,8 +137,15 @@ export default function ProductCustomizeSheet({
 
   const selectedOptions = useMemo(() => {
     if (!product) return [];
-    return product.options.filter((o) => selectedIds.has(o.id));
+    return [
+      ...product.optionGroups.flatMap((group) => group.options),
+      ...product.options,
+    ].filter((o) => selectedIds.has(o.id));
   }, [product, selectedIds]);
+
+  const missingRequiredGroup = product
+    ? findInvalidOptionGroup(product.optionGroups, selectedIds) !== null
+    : false;
 
   const unitPrice = product
     ? getCartLineUnitPrice(product.price, selectedOptions)
@@ -189,7 +197,19 @@ export default function ProductCustomizeSheet({
     });
   };
 
+  const selectGroupOption = (groupId: string, optionId: string) => {
+    const group = product.optionGroups.find((candidate) => candidate.id === groupId);
+    if (!group) return;
+    setSelectedIds((previous) => {
+      const next = new Set(previous);
+      group.options.forEach((option) => next.delete(option.id));
+      next.add(optionId);
+      return next;
+    });
+  };
+
   const handleConfirm = () => {
+    if (missingRequiredGroup) return;
     onConfirm({
       quantity,
       selectedOptions,
@@ -265,6 +285,37 @@ export default function ProductCustomizeSheet({
         </div>
 
         <div className="product-sheet__body">
+          {product.optionGroups.map((group) => (
+            <section className="product-sheet__section" key={group.id}>
+              <h3 className="product-sheet__section-title">
+                {group.name}
+                {group.required ? " *" : ""}
+              </h3>
+              <ul className="product-sheet__options">
+                {group.options.map((option) => {
+                  const checked = selectedIds.has(option.id);
+                  return (
+                    <li key={option.id}>
+                      <label className={`product-sheet__option ${checked ? "product-sheet__option--checked" : ""}`}>
+                        <input
+                          type="radio"
+                          name={`option-group-${group.id}`}
+                          checked={checked}
+                          onChange={() => selectGroupOption(group.id, option.id)}
+                          className="sr-only"
+                        />
+                        <span className="product-sheet__option-name">{option.name}</span>
+                        {option.priceModifier > 0 ? (
+                          <span className="product-sheet__option-price">+{option.priceModifier} kr</span>
+                        ) : null}
+                      </label>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          ))}
+
           {product.options.length > 0 && (
             <section className="product-sheet__section">
               <h3 className="product-sheet__section-title">Extra tillbehör</h3>
@@ -340,6 +391,8 @@ export default function ProductCustomizeSheet({
           <button
             type="button"
             onClick={handleConfirm}
+            disabled={missingRequiredGroup}
+            aria-disabled={missingRequiredGroup}
             className="product-sheet__confirm"
           >
             Lägg till · {lineTotal} kr

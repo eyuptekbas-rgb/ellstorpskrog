@@ -55,9 +55,7 @@ export async function printRoutedReceipt(
     return debugPrintSuccess();
   }
 
-  const printer =
-    resolvePrinterForRole("receipt", options.categoryId) ??
-    resolvePrinterForRole("kitchen", options.categoryId);
+  const printer = resolvePrinterForRole("receipt", options.categoryId);
   if (!activatePrinter(printer)) {
     const result: PrintResult = {
       success: false,
@@ -187,6 +185,7 @@ export async function autoPrintOnNewOrder(
       note: order.note,
       adminNote: order.adminNote,
       estimatedReadyMinutes: order.estimatedReadyMinutes ?? null,
+      confirmedAt: null,
       createdAt: order.createdAt,
       items: order.items.map((item, index) => ({
         id: `${order.orderNumber}-${index}`,

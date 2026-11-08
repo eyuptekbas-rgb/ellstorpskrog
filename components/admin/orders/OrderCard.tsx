@@ -23,7 +23,8 @@ import {
   statusStyle,
 } from "@/lib/orders";
 import { getOrderActions } from "@/lib/orders/admin-filters";
-import { printKitchenTicket, printReceipt, type PrintableOrder } from "@/lib/orders/print";
+import { printKitchenTicket, printReceipt } from "@/lib/orders/print";
+import { toPrintableOrder } from "@/lib/pos/printable-order";
 import { notifyPrintResult } from "@/lib/pos/print-feedback";
 import { useToast } from "@/components/notifications/ToastProvider";
 import type { AdminOrderListItem } from "./useOrderPolling";
@@ -39,26 +40,6 @@ type Props = {
   ) => Promise<void>;
 };
 
-function toPrintable(order: AdminOrderListItem): PrintableOrder {
-  return {
-    orderNumber: order.orderNumber,
-    customerName: order.customerName,
-    customerPhone: order.customerPhone,
-    customerEmail: order.customerEmail,
-    customerAddress: order.customerAddress,
-    orderType: order.orderType,
-    paymentMethod: order.paymentMethod,
-    paymentStatus: order.paymentStatus,
-    note: order.note,
-    adminNote: order.adminNote,
-    total: order.total,
-    status: order.status,
-    estimatedReadyMinutes: order.estimatedReadyMinutes,
-    createdAt: order.createdAt,
-    items: order.items,
-  };
-}
-
 export default function OrderCard({
   order,
   restaurantName,
@@ -67,7 +48,7 @@ export default function OrderCard({
 }: Props) {
   const { pushToast } = useToast();
   const actions = getOrderActions(order.status, order.orderType);
-  const printable = toPrintable(order);
+  const printable = toPrintableOrder(order);
 
   const printKitchen = () => {
     void printKitchenTicket(printable, restaurantName, { stationName: "KÖK" }).then(
@@ -111,9 +92,9 @@ export default function OrderCard({
                 {STATUS_LABELS[order.status]}
               </span>
               <span
-                className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${paymentStatusStyle(order.paymentStatus)}`}
+                className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${paymentStatusStyle(printable.paymentStatus)}`}
               >
-                {PAYMENT_STATUS_LABELS[order.paymentStatus]}
+                {PAYMENT_STATUS_LABELS[printable.paymentStatus]}
               </span>
               {order.note && (
                 <span className="rounded-full bg-amber-500/12 px-2.5 py-1 text-[11px] font-semibold text-amber-200">

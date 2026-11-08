@@ -29,6 +29,15 @@ export async function PATCH(req: Request, { params }: Params) {
     if (body.mergeGroupId === null || typeof body.mergeGroupId === "string") {
       patch.mergeGroupId = body.mergeGroupId;
     }
+    for (const key of ["positionX", "positionY"] as const) {
+      if (body[key] !== undefined) {
+        const value = Number(body[key]);
+        if (!Number.isFinite(value) || value < 0 || value > 1) {
+          return NextResponse.json({ error: "Ogiltig bordsposition." }, { status: 400 });
+        }
+        patch[key] = value;
+      }
+    }
 
     const table = await updateRestaurantTable(tenantId, id, patch);
     if (!table) {

@@ -30,6 +30,9 @@ const READY_STATUSES = new Set<OrderStatus>([
 
 /** Paid online orders and unpaid pickup-at-counter orders are actionable on POS. */
 export function isPosActionableOrder(order: AdminOrderListItem): boolean {
+  if (order.paymentMethod === PaymentMethod.SWISH) {
+    return order.paymentStatus === PaymentStatus.PAID && order.swishConfirmed === true;
+  }
   if (order.paymentStatus === PaymentStatus.PAID) return true;
   return order.paymentMethod === PaymentMethod.ON_PICKUP;
 }
@@ -82,6 +85,7 @@ export function partitionPosQueueOrders(
   };
 
   for (const order of orders) {
+    if (order.paymentMethod === PaymentMethod.SWISH && !isPosActionableOrder(order)) continue;
     const column = getPosQueueColumn(order.status);
     if (column) buckets[column].push(order);
   }

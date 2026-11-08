@@ -114,8 +114,14 @@ async function handlePrint(
     return;
   }
 
-  const resolved = await getResolvedPrintersCached(ctx);
-  const printer = resolvePrinterForKind(kind, body.printer, resolved);
+  // POS requests already carry the printer selected from SiteSettings. Honor
+  // that explicit target immediately; Windows printer discovery is only a
+  // fallback for agent-local/test requests that omit a printer. Discovery
+  // starts PowerShell and can otherwise add seconds before the 202 response.
+  const requestedPrinter = body.printer?.trim();
+  const printer = requestedPrinter
+    ? requestedPrinter
+    : resolvePrinterForKind(kind, undefined, await getResolvedPrintersCached(ctx));
   if (!printer) {
     sendJson(res, 503, {
       success: false,

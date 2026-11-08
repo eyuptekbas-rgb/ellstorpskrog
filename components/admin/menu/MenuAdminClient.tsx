@@ -168,15 +168,6 @@ export default function MenuAdminClient() {
     return () => clearTimeout(timer);
   }, [fetchMenu, filters.search]);
 
-  useEffect(() => {
-    void fetchMenu();
-  }, [
-    filters.categoryId,
-    filters.availability,
-    filters.soldOut,
-    fetchMenu,
-  ]);
-
   const categoryOptions = useMemo(
     () => categories.map((c) => ({ id: c.id, name: c.name })),
     [categories]

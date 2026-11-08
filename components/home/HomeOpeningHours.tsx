@@ -12,20 +12,21 @@ type Props = {
 export default function HomeOpeningHours({ isOpen }: Props) {
   const tp = useTenantPublicPath();
   return (
-    <section className="px-[var(--content-px)] py-[var(--section-py-mobile)] lg:py-[var(--section-py)]">
+    <section className="px-[var(--content-px)] py-10 lg:py-14">
       <div className="mx-auto max-w-6xl">
         <div className="card-premium overflow-hidden rounded-[var(--radius-card)] border border-white/[0.06]">
           <div className="grid lg:grid-cols-[1fr_1.1fr]">
-            <div className="border-b border-white/[0.06] p-6 sm:p-8 lg:border-b-0 lg:border-r">
+            <div className="border-b border-white/[0.06] p-6 sm:p-7 lg:border-b-0 lg:border-r">
               <p className="section-label mb-3">Besök oss</p>
               <h2 className="text-display text-2xl text-white sm:text-3xl lg:text-[2.25rem]">
                 Öppettider
               </h2>
-              <p className="text-body mt-3 max-w-sm text-sm text-white/50 sm:text-base">
+              <p className="text-body mt-2.5 max-w-sm text-sm text-white/50 sm:text-base">
                 Servering, avhämtning och bordsbokning enligt schemat nedan.
               </p>
 
-              <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-2 text-xs font-semibold">
+              <div className="mt-4 flex items-center justify-between gap-4">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-2 text-xs font-semibold">
                 <span
                   className={`h-2 w-2 rounded-full ${
                     isOpen
@@ -40,21 +41,22 @@ export default function HomeOpeningHours({ isOpen }: Props) {
 
               <Link
                 href={tp("/kontakt")}
-                className="mt-6 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#b85c38] transition hover:text-[#d4a574]"
+                className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#b85c38] transition hover:text-[#d4a574]"
               >
                 Kontakta oss
                 <ArrowRight size={14} />
               </Link>
+              </div>
             </div>
 
-            <div className="bg-white/[0.02] p-6 sm:p-8">
+            <div className="bg-white/[0.02] p-6 sm:p-7">
               <div className="mb-4 flex items-center gap-2 text-[#d4a574]">
                 <Clock size={16} />
                 <span className="text-xs font-semibold uppercase tracking-[0.14em]">
                   Veckoschema
                 </span>
               </div>
-              <ul className="space-y-3">
+              <ul className="space-y-2.5">
                 {OPENING_HOURS_DISPLAY.map(({ days, hours }) => (
                   <li
                     key={days}

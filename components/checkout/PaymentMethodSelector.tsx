@@ -4,12 +4,13 @@ import { useRef } from "react";
 import { Banknote, Check, CreditCard } from "lucide-react";
 import type { OrderType } from "./OrderTypeSelector";
 
-export type PaymentMethod = "kort" | "afhentning";
+export type PaymentMethod = "kort" | "swish" | "afhentning";
 
 type Props = {
   paymentMethod: PaymentMethod;
   orderType: OrderType;
   stripeCardEnabled: boolean;
+  swishEnabled?: boolean;
   onChange: (method: PaymentMethod) => void;
 };
 
@@ -17,11 +18,18 @@ export default function PaymentMethodSelector({
   paymentMethod,
   orderType,
   stripeCardEnabled,
+  swishEnabled = false,
   onChange,
 }: Props) {
   const optionRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const options = [
+    swishEnabled && {
+      value: "swish" as const,
+      icon: Banknote,
+      title: "Swish",
+      description: "Godkänn betalningen i Swish på ditt mobilnummer",
+    },
     stripeCardEnabled && {
       value: "kort" as const,
       icon: CreditCard,
@@ -29,7 +37,7 @@ export default function PaymentMethodSelector({
       description: "Visa, Mastercard, Apple Pay via Stripe",
       badge: orderType === "levering" ? "Krävs" : "Rekommenderas",
     },
-    orderType === "afhentning" && {
+    process.env.NODE_ENV !== "production" && orderType === "afhentning" && {
       value: "afhentning" as const,
       icon: Banknote,
       title: "Betal vid avhämtning",

@@ -17,6 +17,7 @@ type Options = {
   ) => void;
   setError: (message: string) => void;
   confirmCancel?: boolean;
+  restaurantName?: string;
 };
 
 export function useOrderStatusUpdate({

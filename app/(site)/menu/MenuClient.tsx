@@ -438,25 +438,27 @@ export default function MenuClient({
 
   return (
     <div className="menu-pro min-h-screen bg-[var(--background)] text-[var(--foreground)] lg:pb-[var(--menu-space-16)]">
-      <header className="menu-pro-header px-[var(--content-px)] pb-0 pt-[var(--menu-space-3)] lg:pb-[var(--menu-space-2)] lg:pt-[var(--menu-space-6)]">
-        <div className="lg:hidden">
-          <h1 className="menu-pro-header__title">Meny</h1>
-          <p className="menu-pro-header__meta">
-            {productTotal} {productTotal === 1 ? "rätt" : "rätter"}
-          </p>
-        </div>
+      <header className="menu-pro-header pb-[var(--menu-space-4)] pt-[var(--menu-space-3)] lg:pb-[var(--menu-space-6)] lg:pt-[var(--menu-space-6)]">
+        <div className="mx-auto max-w-3xl px-[var(--content-px)]">
+          <div className="lg:hidden">
+            <h1 className="menu-pro-header__title">Meny</h1>
+            <p className="menu-pro-header__meta">
+              {productTotal} {productTotal === 1 ? "rätt" : "rätter"}
+            </p>
+          </div>
 
-        <div className="mb-[var(--menu-space-4)] hidden lg:block">
-          <p className="section-label mb-[var(--menu-space-3)]">Beställ online</p>
-          <h1 className="text-display text-4xl text-white">Meny</h1>
-          <p className="text-body mt-3 max-w-lg text-base text-[color-mix(in_srgb,var(--menu-color-white)_48%,transparent)]">
-            Välj dina favoriter och lägg till i varukorgen — snabb avhämtning
-            eller hemleverans.
-          </p>
-        </div>
+          <div className="mb-[var(--menu-space-4)] hidden lg:block">
+            <p className="section-label mb-[var(--menu-space-3)]">Beställ online</p>
+            <h1 className="text-display text-4xl text-white">Meny</h1>
+            <p className="text-body mt-3 max-w-lg text-base text-[color-mix(in_srgb,var(--menu-color-white)_48%,transparent)]">
+              Välj dina favoriter och lägg till i varukorgen — snabb avhämtning
+              eller hemleverans.
+            </p>
+          </div>
 
-        <div className="menu-pro-search mt-[var(--menu-space-3)] lg:mt-0 lg:max-w-md">
-          <MenuSearch value={query} onChange={setQuery} />
+          <div className="menu-pro-search mt-[var(--menu-space-3)] lg:mt-0 lg:max-w-md">
+            <MenuSearch value={query} onChange={setQuery} />
+          </div>
         </div>
       </header>
 

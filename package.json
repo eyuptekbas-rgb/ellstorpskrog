@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "prisma generate && next dev",
     "dev:prepare": "prisma migrate dev && prisma generate",
-    "build": "next build --webpack",
+    "build": "npx tsx scripts/verify-vercel-production-env.ts && next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
@@ -25,6 +25,7 @@
     "test": "tsx --test tests/billing/**/*.test.ts tests/security/**/*.test.ts tests/rms/**/*.test.ts tests/payment/**/*.test.ts tests/integration/**/*.test.ts tests/e2e/**/*.test.ts",
     "test:billing": "tsx --test tests/billing/**/*.test.ts",
     "test:security": "tsx --test tests/security/**/*.test.ts",
+    "test:public": "tsx --test tests/home/**/*.test.ts tests/email/**/*.test.ts tests/security/customer-account-routing.test.ts tests/menu/required-options.test.ts",
     "test:payment": "tsx --test tests/payment/**/*.test.ts",
     "launch:env": "npx tsx scripts/launch/env-checklist.ts",
     "launch:e2e": "npx tsx scripts/launch/e2e-verify.ts",

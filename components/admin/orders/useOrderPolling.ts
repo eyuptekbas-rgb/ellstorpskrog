@@ -29,11 +29,13 @@ export type AdminOrderListItem = {
   orderType: import("@prisma/client").OrderType;
   paymentMethod: import("@prisma/client").PaymentMethod;
   paymentStatus: import("@prisma/client").PaymentStatus;
+  swishConfirmed?: boolean;
   total: number;
   status: OrderStatus;
   note: string | null;
   adminNote: string | null;
   estimatedReadyMinutes: number | null;
+  confirmedAt: string | null;
   createdAt: string;
   items: {
     id: string;
@@ -95,9 +97,15 @@ export function useOrderPolling({
   const initialized = useRef(false);
   const initialLoadNotified = useRef(false);
   const fetchGeneration = useRef(0);
+  const inFlightKey = useRef<string | null>(null);
 
   const fetchOrders = useCallback(
     async (silent = false) => {
+      const requestKey = JSON.stringify([search, filter, transport.kind]);
+      // SSE bursts and the polling timer must not continually invalidate a
+      // slow request; otherwise orders never reach the screen.
+      if (inFlightKey.current === requestKey) return;
+      inFlightKey.current = requestKey;
       const gen = ++fetchGeneration.current;
       posDebugLog("FETCH ORDERS", { silent, gen, search, filter, transport: transport.kind });
 
@@ -109,6 +117,7 @@ export function useOrderPolling({
       try {
         const started = performance.now();
         const data = await transport.fetchOrders({ search, filter });
+        if (gen !== fetchGeneration.current) return;
         posDebugLog("FETCH COMPLETE", {
           gen,
           count: data.length,
@@ -161,10 +170,13 @@ export function useOrderPolling({
           gen,
           message: err instanceof Error ? err.message : String(err),
         });
-        setError("Kunde inte hämta beställningar.");
+        if (gen === fetchGeneration.current) setError("Kunde inte hämta beställningar.");
       } finally {
         posDebugLog("FETCH FINALLY", { gen, loadingWillBeFalse: true });
-        if (!initialLoadNotified.current && gen === fetchGeneration.current) {
+        if (gen === fetchGeneration.current && effectiveDeferRealtime && !isPosEmergencyDebug()) {
+          setRealtimeEnabled(true);
+        }
+        if (fetchSucceeded && !initialLoadNotified.current && gen === fetchGeneration.current) {
           initialLoadNotified.current = true;
           if (effectiveDeferRealtime && !isPosEmergencyDebug()) {
             setRealtimeEnabled(true);
@@ -175,6 +187,7 @@ export function useOrderPolling({
           }
         }
         if (gen === fetchGeneration.current) {
+          inFlightKey.current = null;
           setLoading(false);
           setRefreshing(false);
         }

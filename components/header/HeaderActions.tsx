@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Phone, ShoppingBag } from "lucide-react";
+import DesktopAccountLink from "@/components/header/DesktopAccountLink";
 
 type Props = {
   phoneHref: string;
@@ -72,6 +73,7 @@ export default function HeaderActions({
       >
         <Phone size={isMobile ? 17 : 18} strokeWidth={1.75} aria-hidden />
       </a>
+      {!isMobile && <DesktopAccountLink />}
       {isMenuPage ? (
         <button
           type="button"

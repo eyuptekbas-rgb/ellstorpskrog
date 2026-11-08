@@ -122,15 +122,14 @@ export async function autoPrintNewOrder(
   const printable = toPrintableOrder(order);
   const results: PrintResult[] = [];
 
-  const printKitchen =
-    options.posMode || options.force || settings.autoPrintKitchen;
-  const printReceipt =
-    options.includeReceipt ||
-    options.force ||
-    options.posMode ||
-    settings.autoPrintReceipt;
+  const printKitchen = false;
+  const printReceipt = options.includeReceipt || options.force || options.posMode || settings.autoPrintReceipt;
 
   if (printKitchen) {
+    if (options.posMode) {
+      const result = await printKitchenStation(order.id, "kitchen", printable, restaurantName, options);
+      if (result) results.push(result);
+    } else {
     const stations = splitOrderByStation(printable);
     const roles = Object.keys(stations) as Array<
       Extract<PrinterRole, "kitchen" | "bar" | "dessert">
@@ -158,6 +157,7 @@ export async function autoPrintNewOrder(
         );
         if (result) results.push(result);
       }
+    }
     }
   }
 

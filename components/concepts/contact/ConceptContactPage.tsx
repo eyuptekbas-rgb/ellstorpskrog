@@ -10,8 +10,7 @@ import {
   Send,
 } from "lucide-react";
 import { libre } from "@/app/(site)/fonts";
-import BrandLogo from "@/components/brand/BrandLogo";
-import MobilePageLogo from "@/components/brand/MobilePageLogo";
+import styles from "./ContactPage.module.css";
 import { useConceptLayout } from "@/components/concepts/ConceptLayoutProvider";
 import { useTenantBranding } from "@/components/tenant/TenantBrandingProvider";
 import {
@@ -119,6 +118,7 @@ function ContactForm({
 
       <form onSubmit={form.handleSubmit} className="space-y-3.5">
         <input
+          aria-label="Namn"
           value={form.name}
           onChange={(e) => form.setName(e.target.value)}
           placeholder="Namn"
@@ -127,6 +127,7 @@ function ContactForm({
           className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none transition focus:border-[var(--brand-copper)]/45"
         />
         <input
+          aria-label="E-post"
           type="email"
           value={form.email}
           onChange={(e) => form.setEmail(e.target.value)}
@@ -136,6 +137,7 @@ function ContactForm({
           className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none transition focus:border-[var(--brand-copper)]/45"
         />
         <textarea
+          aria-label="Ditt meddelande"
           value={form.message}
           onChange={(e) => form.setMessage(e.target.value)}
           placeholder="Ditt meddelande…"
@@ -230,12 +232,16 @@ function MapBlock({ embed, directions }: { mapsQuery?: string; embed: string; di
 
 export default function ConceptContactPage() {
   const { layoutId } = useConceptLayout();
-  const { restaurantName, phone, address } = useTenantBranding();
+  const { restaurantName, phone, address, isDefaultTenant } = useTenantBranding();
   const form = useContactForm();
+  const traditional = layoutId === "traditional" || !layoutId;
 
-  const street = address?.split(",")[0]?.trim() ?? "Sallerupsvägen 28D";
-  const city = address?.includes(",") ? address.split(",").slice(1).join(",").trim() : "212 18 Malmö";
-  const mapsQuery = encodeURIComponent(address ?? "Sallerupsvägen 28D, Malmö, Sweden");
+  const contactAddress = isDefaultTenant && (!address?.trim() || address.trim().toLowerCase() === "adress")
+    ? "Sallerupsvägen 28D, 212 18 Malmö"
+    : address?.trim() || "Sallerupsvägen 28D, 212 18 Malmö";
+  const street = contactAddress.split(",")[0].trim();
+  const city = contactAddress.includes(",") ? contactAddress.split(",").slice(1).join(",").trim() : "212 18 Malmö";
+  const mapsQuery = encodeURIComponent(`${street}, ${city}, Sweden`);
   const directions = `https://www.google.com/maps/dir/?api=1&destination=${mapsQuery}`;
   const embed = `https://maps.google.com/maps?q=${mapsQuery}&hl=sv&z=15&output=embed`;
   const tel = phoneHref(phone);
@@ -246,7 +252,7 @@ export default function ConceptContactPage() {
         <Phone size={18} /> Ring nu
       </a>
       <a href={directions} target="_blank" rel="noopener noreferrer" className="btn-secondary flex min-h-[3.75rem] items-center justify-center gap-2.5 !px-4 !py-3.5 text-sm">
-        <Navigation size={18} /> Vägvisning
+        <Navigation size={18} /> Vägbeskrivning
       </a>
     </div>
   );
@@ -277,10 +283,8 @@ export default function ConceptContactPage() {
   );
 
   const traditionalHeader = (
-    <header className="mb-8 text-center lg:mb-10 lg:text-left">
-      <MobilePageLogo className="mx-auto mb-5" priority />
-      <BrandLogo size="hero" href="/" className="mx-auto mb-5 hidden lg:mx-0 lg:mb-6 lg:block" priority />
-      <p className="section-label mb-3">{restaurantName} · Malmö</p>
+    <header className={styles.intro}>
+      <p className="section-label mb-3">Restaurang · Malmö</p>
       <h1 className={`${libre.className} text-[2.125rem] leading-[1.12] tracking-tight sm:text-5xl`}>Kontakta oss</h1>
       <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-white/55 lg:mx-0 lg:text-base">
         Vi finns här för bord, beställningar och frågor.
@@ -290,7 +294,7 @@ export default function ConceptContactPage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[var(--background)] text-[var(--foreground)]">
-      <div className="relative mx-auto max-w-lg px-[var(--content-px)] pb-6 pt-6 lg:max-w-2xl lg:pb-10 lg:pt-10">
+      <div className={traditional ? styles.container : "relative mx-auto max-w-lg px-[var(--content-px)] pb-6 pt-6 lg:max-w-2xl lg:pb-10 lg:pt-10"}>
         {layoutId === "delivery-app" && (
           <>
             <header className="mb-6">
@@ -409,13 +413,21 @@ export default function ConceptContactPage() {
           </>
         )}
 
-        {(layoutId === "traditional" || !layoutId) && (
+        {traditional && (
           <>
-            {traditionalHeader}
-            {quickActions}
-            <div className="mb-8 space-y-3">{phoneCard}{addressCard}<HoursBlock /></div>
-            <MapBlock mapsQuery={mapsQuery} embed={embed} directions={directions} />
-            <div className="mt-8"><ContactForm form={form} /></div>
+            <div className={styles.top}>
+              {traditionalHeader}
+              <div className={styles.actions}>{quickActions}</div>
+            </div>
+            <div className={styles.composition}>
+              <section aria-label="Kontaktuppgifter" className={styles.info}>
+                {phoneCard}{addressCard}<HoursBlock />
+              </section>
+              <div className={styles.right}>
+                <MapBlock embed={embed} directions={directions} />
+                <div className={styles.form}><ContactForm form={form} /></div>
+              </div>
+            </div>
           </>
         )}
       </div>

@@ -6,10 +6,14 @@ import { prisma } from "@/lib/prisma";
 import { paymentService, PaymentError } from "@/src/services/payment/server/payment-service";
 import { orderTotalToPaymentAmount } from "@/src/services/payment/providers/stripe/amounts";
 import { PAYMENT_METHODS } from "@/src/services/payment/types";
+import { resolveSwishProviderConfig } from "../../providers/swish/config";
+import { normalizeSwishPhone } from "../../providers/swish/swish-provider";
+import { orderTotalToSwishAmount } from "../../providers/swish/amounts";
 
 export type CreateCheckoutPaymentBody = {
   customerName: string;
   customerPhone: string;
+  swishPayerPhone?: string;
   customerEmail: string;
   customerAddress?: string;
   orderType: string;
@@ -31,6 +35,9 @@ function mapCheckoutPaymentMethod(
   method?: string
 ): (typeof PAYMENT_METHODS)[number] {
   switch (method) {
+    case "swish":
+    case "SWISH":
+      return PaymentMethod.SWISH;
     case "apple_pay":
     case "APPLE_PAY":
       return PaymentMethod.APPLE_PAY;
@@ -46,12 +53,13 @@ export async function createCheckoutPayment(
   tenantId: string,
   body: CreateCheckoutPaymentBody
 ) {
-  const stripeConfig = await getStripeConfig(tenantId);
-  if (!stripeConfig.enabled) {
+  const isSwish = body.paymentMethod?.toUpperCase() === "SWISH";
+  const enabled = isSwish ? Boolean(await resolveSwishProviderConfig(tenantId)) : (await getStripeConfig(tenantId)).enabled;
+  if (!enabled) {
     return {
       ok: false as const,
       status: 503,
-      error: "Card payments are not enabled",
+      error: isSwish ? "Swish payments are not configured" : "Card payments are not enabled",
     };
   }
 
@@ -94,6 +102,14 @@ export async function createCheckoutPayment(
     clientSubtotal: subtotal,
     clientDeliveryFee: deliveryFee,
   });
+  let swishPayerPhone: string | undefined;
+  if (isSwish) {
+    try {
+      swishPayerPhone = normalizeSwishPhone(body.swishPayerPhone ?? customerPhone);
+    } catch {
+      return { ok: false as const, status: 400, error: "Ange ett svenskt mobilnummer kopplat till Swish, till exempel 0701234567." };
+    }
+  }
 
   const order = await prisma.$transaction(async (tx) =>
     createOrder(tx, {
@@ -103,7 +119,7 @@ export async function createCheckoutPayment(
       customerEmail,
       customerAddress,
       orderType: mappedOrderType,
-      paymentMethod: PaymentMethod.CARD,
+      paymentMethod: isSwish ? PaymentMethod.SWISH : PaymentMethod.CARD,
       paymentStatus: PaymentStatus.PENDING,
       note,
       total: pricing.total,
@@ -116,11 +132,13 @@ export async function createCheckoutPayment(
       orderId: order.id,
       businessId: tenantId,
       method: mapCheckoutPaymentMethod(paymentMethod),
-      amount: orderTotalToPaymentAmount(pricing.total),
+      amount: isSwish ? orderTotalToSwishAmount(pricing.total) : orderTotalToPaymentAmount(pricing.total),
       currency: "SEK",
+      ...(isSwish && { swishPayerPhone }),
     });
 
     if (!paymentResult.actionUrl) {
+      if (isSwish) return { ok: false as const, status: 503, error: "Swish could not start payment" };
       await prisma.order.update({
         where: { id: order.id },
         data: { status: OrderStatus.CANCELLED },
@@ -141,6 +159,8 @@ export async function createCheckoutPayment(
       orderNumber: order.orderNumber,
     };
   } catch (error) {
+    // A transport timeout is ambiguous: a later verified callback can still settle it.
+    if (isSwish) return { ok: false as const, status: 503, error: "Swish payment could not be confirmed; do not retry until its status is checked" };
     await prisma.order
       .update({
         where: { id: order.id },

@@ -138,10 +138,13 @@ model Tenant {
   deliveryZones DeliveryZone[]
   reservations  Reservation[]
   restaurantTables RestaurantTable[]
+  floorLabels FloorLabel[]
   customerProfiles CustomerCrmProfile[]
   platformInvoices PlatformInvoice[]
   payments      Payment[]
   paymentSettings BusinessPaymentSettings?
+  deliveryAssignments DeliveryAssignment[]
+  terminals      RmsTerminal[]
 }
 
 model User {
@@ -339,6 +342,7 @@ model Order {
   statusHistory   OrderStatusHistory[]
   notificationLogs NotificationLog[]
   payments        Payment[]
+  deliveryAssignment DeliveryAssignment?
 
   @@unique([tenantId, orderNumber])
   @@index([tenantId])
@@ -414,6 +418,44 @@ model OrderStatusHistory {
   status    OrderStatus
   createdAt DateTime    @default(now())
   order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model DeliveryAssignment {
+  id             String   @id @default(cuid())
+  tenantId       String
+  orderId        String   @unique
+  deliveryStatus String   @default("queued")
+  driverId       String?
+  driverName     String?
+  etaMinutes     Int?
+  assignedAt     DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  tenant         Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, updatedAt])
+  @@index([tenantId, deliveryStatus])
+}
+
+model RmsTerminal {
+  id                 String   @id
+  tenantId           String
+  name               String
+  location           String
+  kitchen            String
+  deviceKind         String   @default("pos")
+  printerStatus      String   @default("unknown")
+  printQueueLength   Int      @default(0)
+  offlineQueueLength Int      @default(0)
+  appVersion         String?
+  lastSeen           DateTime @default(now())
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  tenant             Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, id])
+  @@index([tenantId, lastSeen])
 }
 
 model OrderItem {
@@ -560,6 +602,8 @@ model RestaurantTable {
   tenantId     String
   name         String
   capacity     Int
+  positionX    Float?
+  positionY    Float?
   mergeGroupId String?
   sortOrder    Int           @default(0)
   active       Boolean       @default(true)
@@ -571,6 +615,25 @@ model RestaurantTable {
   @@unique([tenantId, name])
   @@index([tenantId])
   @@index([mergeGroupId])
+}
+
+model FloorLabel {
+  id String @id @default(cuid())
+  tenantId String
+  label String
+  orientation FloorLabelOrientation @default(HORIZONTAL)
+  positionX Float?
+  positionY Float?
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([tenantId, label])
+  @@index([tenantId])
+}
+
+enum FloorLabelOrientation {
+  HORIZONTAL
+  VERTICAL
 }
 
 model CustomerCrmProfile {

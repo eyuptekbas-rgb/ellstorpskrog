@@ -13,6 +13,7 @@ import {
 } from "@/lib/orders/kitchen";
 import type { AdminOrderListItem } from "@/components/admin/orders/useOrderPolling";
 import { useNow } from "./useNow";
+import { getReadyCountdown } from "@/lib/pos/ready-countdown";
 
 type Props = {
   order: AdminOrderListItem;
@@ -64,6 +65,14 @@ export default function KitchenOrderCard({
   const urgency = getKitchenUrgency(order.createdAt, now);
   const flashing = shouldFlashOrder(order.createdAt, now);
   const isDelivery = order.orderType === OrderType.DELIVERY;
+  const countdown = getReadyCountdown(
+    order.status,
+    order.confirmedAt,
+    order.estimatedReadyMinutes,
+    now
+  );
+  const timerText = countdown?.display ??
+    (order.status === OrderStatus.READY ? "KLAR" : formatElapsedTimer(order.createdAt, now));
 
   return (
     <article
@@ -87,7 +96,7 @@ export default function KitchenOrderCard({
         <div
           className={`shrink-0 rounded-2xl px-3 py-2 text-center font-mono text-lg font-bold tabular-nums sm:text-xl ${urgencyTimerClass(urgency)}`}
         >
-          {formatElapsedTimer(order.createdAt, now)}
+          {timerText}
         </div>
       </div>
 
@@ -165,14 +174,6 @@ export default function KitchenOrderCard({
                 onClick={() => onAction(order.id, OrderStatus.COMPLETED)}
               />
             ) : isDelivery ? (
-              <>
-                <KitchenActionButton
-                  label="Levererad"
-                  icon={Truck}
-                  tone="green"
-                  disabled={acting}
-                  onClick={() => onAction(order.id, OrderStatus.COMPLETED)}
-                />
                 <KitchenActionButton
                   label="Under leverans"
                   icon={Truck}
@@ -180,7 +181,6 @@ export default function KitchenOrderCard({
                   disabled={acting}
                   onClick={() => onAction(order.id, OrderStatus.DELIVERING)}
                 />
-              </>
             ) : (
               <KitchenActionButton
                 label="Hämtad"

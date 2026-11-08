@@ -25,7 +25,10 @@ export function loadPrintQueue(): PrintQueueItem[] {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw) as PrintQueueItem[];
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return [];
+    const receiptsOnly = parsed.filter((item) => item.documentType !== "kitchen-ticket");
+    if (receiptsOnly.length !== parsed.length) savePrintQueue(receiptsOnly);
+    return receiptsOnly;
   } catch {
     return [];
   }

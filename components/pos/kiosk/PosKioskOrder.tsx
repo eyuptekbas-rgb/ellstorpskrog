@@ -10,9 +10,11 @@ import {
 } from "@/lib/orders";
 import { formatPosOrderNumber } from "@/lib/pos/display";
 import type { AdminOrderListItem } from "@/components/admin/orders/useOrderPolling";
+import { getReadyCountdown } from "@/lib/pos/ready-countdown";
 
 type Props = {
   order: AdminOrderListItem | null;
+  nowMs: number;
 };
 
 function paymentBadgeClass(status: PaymentStatus): string {
@@ -26,7 +28,19 @@ function paymentBadgeClass(status: PaymentStatus): string {
   return "pos-pro-order__badge--due";
 }
 
-function PosKioskOrder({ order }: Props) {
+function PosKioskOrder({ order, nowMs }: Props) {
+  const swishUnconfirmed = order?.paymentMethod === "SWISH" &&
+    (order.paymentStatus !== PaymentStatus.PAID || order.swishConfirmed !== true);
+  const paymentStatus = order && swishUnconfirmed && order.paymentStatus === PaymentStatus.PAID
+    ? PaymentStatus.PENDING : order?.paymentStatus ?? PaymentStatus.PENDING;
+  const countdown = order
+    ? getReadyCountdown(
+        order.status,
+        order.confirmedAt,
+        order.estimatedReadyMinutes,
+        nowMs
+      )
+    : null;
   return (
     <section className="pos-pro-order" aria-label="Aktiv order">
       <div className="pos-pro-order__panel">
@@ -56,12 +70,21 @@ function PosKioskOrder({ order }: Props) {
                 {ORDER_TYPE_LABELS[order.orderType]}
               </span>
               <span
-                className={`pos-pro-order__badge ${paymentBadgeClass(order.paymentStatus)}`}
+                className={`pos-pro-order__badge ${paymentBadgeClass(paymentStatus)}`}
               >
-                {PAYMENT_LABELS[order.paymentMethod]} ·{" "}
-                {PAYMENT_STATUS_LABELS[order.paymentStatus]}
+                {swishUnconfirmed ? "Ej bekräftad" : PAYMENT_LABELS[order.paymentMethod]} ·{" "}
+                {PAYMENT_STATUS_LABELS[paymentStatus]}
               </span>
             </div>
+
+            {countdown ? (
+              <div
+                className={`pos-pro-order__countdown${countdown.overdue ? " pos-pro-order__countdown--overdue" : ""}`}
+              >
+                <span>{countdown.overdue ? "Försenad" : "Klar om"}</span>
+                <strong>{countdown.display}</strong>
+              </div>
+            ) : null}
 
             {order.orderType === OrderType.DELIVERY && order.customerAddress ? (
               <div className="pos-pro-order__addr">{order.customerAddress}</div>

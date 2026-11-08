@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { CheckCircle2, X, XCircle } from "lucide-react";
 
 export type ToastTone = "success" | "error" | "info";
@@ -16,17 +16,17 @@ let toastId = 0;
 export function useAdminToast() {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  const push = (text: string, tone: ToastTone = "success") => {
+  const push = useCallback((text: string, tone: ToastTone = "success") => {
     const id = ++toastId;
     setToasts((prev) => [...prev, { id, text, tone }]);
     window.setTimeout(() => {
       setToasts((prev) => prev.filter((toast) => toast.id !== id));
     }, 3200);
-  };
+  }, []);
 
-  const dismiss = (id: number) => {
+  const dismiss = useCallback((id: number) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
-  };
+  }, []);
 
   return { toasts, push, dismiss };
 }

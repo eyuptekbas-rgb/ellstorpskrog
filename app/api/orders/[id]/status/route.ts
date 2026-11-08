@@ -3,6 +3,7 @@ import { OrderStatus } from "@prisma/client";
 import { auth } from "@/auth";
 import { updateOrderStatus } from "@/lib/orders/update-status";
 import { getAdminTenantId, tenantApiError } from "@/lib/tenant/admin-api";
+import { InvalidOrderStatusTransitionError } from "@/lib/orders/status-transitions";
 
 export async function PUT(
   req: Request,
@@ -28,6 +29,9 @@ export async function PUT(
 
     return NextResponse.json(result.order);
   } catch (error) {
+    if (error instanceof InvalidOrderStatusTransitionError) {
+      return NextResponse.json({ error: error.message }, { status: 409 });
+    }
     const apiError = tenantApiError(error);
     if (apiError) return apiError;
     console.error("PUT /api/orders/[id]/status error:", error);

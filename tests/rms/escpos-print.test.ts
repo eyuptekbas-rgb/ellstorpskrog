@@ -5,7 +5,7 @@ import { CMD_CUT, CMD_INIT, GS } from "@/lib/printing/escpos/commands";
 import { encodeCashDrawerKick } from "@/lib/printing/escpos/cash-drawer";
 import { EscPosEncoder } from "@/lib/printing/escpos/encoder";
 import { encodeKitchenTicket } from "@/lib/printing/escpos/kitchen-ticket";
-import { encodeReceipt } from "@/lib/printing/escpos/receipt";
+import { encodeReceipt, buildReceiptPaymentInfo } from "@/lib/printing/escpos/receipt";
 import { buildReceiptDocument } from "@/lib/printing/receipt";
 import { decodeCp850, encodeCp850 } from "@/lib/printing/escpos/text-encoding";
 import type { PrintableOrder } from "@/lib/printing/types";
@@ -41,6 +41,12 @@ function plainEscPosText(bytes: Uint8Array): string {
   return decodeCp850(new Uint8Array(stripped));
 }
 
+function containsBytes(bytes: Uint8Array, sequence: number[]): boolean {
+  return bytes.some((_, index) =>
+    sequence.every((value, offset) => bytes[index + offset] === value)
+  );
+}
+
 function sampleOrder(): PrintableOrder {
   return {
     orderNumber: "1042",
@@ -51,10 +57,13 @@ function sampleOrder(): PrintableOrder {
     orderType: OrderType.DELIVERY,
     paymentMethod: PaymentMethod.SWISH,
     paymentStatus: PaymentStatus.PAID,
+    swishConfirmed: true,
     note: "Ring på dörren",
     adminNote: null,
     total: 249,
     status: "NEW",
+    estimatedReadyMinutes: 20,
+    confirmedAt: "2026-06-19T16:20:00.000Z",
     createdAt: "2026-06-19T12:00:00.000Z",
     items: [
       {
@@ -100,7 +109,48 @@ describe("ESC/POS text encoding", () => {
 });
 
 describe("ESC/POS receipt", () => {
-  it("includes restaurant, order, payment, and total", () => {
+  it("requires explicit confirmation and PAID for Swish in every receipt entry point", () => {
+    for (const paymentStatus of Object.values(PaymentStatus)) {
+      for (const swishConfirmed of [undefined, false, true]) {
+        const order = { ...sampleOrder(), paymentStatus, swishConfirmed };
+        const confirmed = paymentStatus === PaymentStatus.PAID && swishConfirmed === true;
+        const generic = buildReceiptPaymentInfo(order);
+        assert.equal(generic.methodLabel === "Swish", confirmed);
+        if (!confirmed) assert.equal(generic.swishReference, undefined);
+        const normal = plainEscPosText(buildReceiptDocument(order, "Test").escpos);
+        const overridden = plainEscPosText(encodeReceipt({ order, restaurant: { name: "Test" },
+          payment: { methodLabel: "Swish", swishReference: "MUST-NOT-BYPASS" } }));
+        assert.equal(normal.includes("Swish"), confirmed);
+        assert.equal(overridden.includes("Swish"), confirmed);
+        assert.equal(overridden.includes("MUST-NOT-BYPASS"), confirmed);
+      }
+    }
+  });
+
+  it("cannot inject a Swish receipt label for another payment method", () => {
+    const order = { ...sampleOrder(), paymentMethod: PaymentMethod.ON_PICKUP };
+    const text = plainEscPosText(encodeReceipt({ order, restaurant: { name: "Test" },
+      payment: { methodLabel: "Swish", swishReference: "UNVERIFIED" } }));
+    assert.doesNotMatch(text, /Swish|UNVERIFIED/);
+  });
+
+  it("uses Font A, maximum density, emphasized body, and height-only headings", () => {
+    const bytes = encodeReceipt({
+      order: sampleOrder(),
+      restaurant: { name: "Ellstorps Krog" },
+      payment: { methodLabel: "Betal vid avhämtning" },
+    });
+
+    assert.ok(containsBytes(bytes, [0x1b, 0x37, 0xff, 0x01, 0x00]));
+    assert.ok(containsBytes(bytes, [0x1b, 0x4d, 0x00]));
+    assert.equal(containsBytes(bytes, [0x1b, 0x4d, 0x01]), false);
+    assert.ok(containsBytes(bytes, [0x1b, 0x45, 0x01]));
+    assert.ok(containsBytes(bytes, [0x1d, 0x21, 0x10]));
+    assert.equal(containsBytes(bytes, [0x1d, 0x21, 0x20]), false);
+    assert.equal(containsBytes(bytes, [0x1d, 0x21, 0x30]), false);
+  });
+
+  it("starts with order information and omits the restaurant header", () => {
     const bytes = encodeReceipt({
       order: sampleOrder(),
       restaurant: {
@@ -117,16 +167,17 @@ describe("ESC/POS receipt", () => {
     });
 
     const text = plainEscPosText(bytes);
-    assert.ok(text.includes("Ellstorps Krog"));
-    assert.ok(text.includes("1042"));
-    assert.ok(text.includes("Ordernummer:"));
-    assert.ok(text.includes("KUND"));
-    assert.ok(text.includes("ARTIKLAR"));
+    assert.equal(text.includes("Ellstorps Krog"), false);
+    assert.equal(text.includes("Ellstorpsvägen 1"), false);
+    assert.match(text, /^Order nr: #1042\s*\nLeverans\s*\nKlar: 18:40/);
+    assert.ok(text.includes("PRODUKTER"));
     assert.ok(text.includes("Swish"));
     assert.ok(text.includes("ABC123"));
-    assert.ok(text.includes("Total:"));
+    assert.ok(text.includes("Delsumma"));
+    assert.ok(text.includes("Moms (12%)"));
+    assert.ok(text.includes("TOTALT"));
     assert.match(text, /Namn:\s+Anna Test/);
-    assert.match(text, /2x Margherita\.+240 kr/);
+    assert.match(text, /2x Margherita\s+240 kr/);
     assert.ok(text.includes("Meddelande"));
     assert.ok(text.includes("Ring på dörren"));
     assert.equal(text.includes("Tack för ditt besök"), false);
@@ -149,10 +200,13 @@ describe("ESC/POS receipt", () => {
   it("is the POS customer receipt renderer (no KÖK header, no QR)", () => {
     const doc = buildReceiptDocument(sampleOrder(), "Ellstorps Krog");
     const text = plainEscPosText(doc.escpos);
-    assert.ok(text.includes("Ordernummer:"));
+    assert.ok(text.startsWith("Order nr: #1042"));
+    assert.equal(text.includes("Ellstorps Krog"), false);
     assert.match(text, /Namn:\s+Anna Test/);
     assert.match(text, /Tlf nr:\s+0701234567/);
-    assert.ok(text.includes("Total:"));
+    assert.ok(text.includes("Delsumma"));
+    assert.ok(text.includes("Moms (12%)"));
+    assert.ok(text.includes("TOTALT"));
     assert.equal(text.includes("KÖK"), false);
     const hasQr = doc.escpos.some(
       (_, index) =>
@@ -161,6 +215,113 @@ describe("ESC/POS receipt", () => {
         doc.escpos[index + 2] === 0x6b
     );
     assert.equal(hasQr, false);
+  });
+
+  it("handles missing customer name and phone without breaking labels", () => {
+    const doc = buildReceiptDocument(
+      { ...sampleOrder(), customerName: "", customerPhone: "" },
+      "Ellstorps Krog"
+    );
+    const text = plainEscPosText(doc.escpos);
+    assert.match(text, /Namn:\s+-/);
+    assert.match(text, /Tlf nr:\s+-/);
+  });
+
+  it("keeps long products, prices, add-ons and Swedish text inside 42 columns", () => {
+    const order: PrintableOrder = {
+      ...sampleOrder(),
+      orderNumber: "EK-000029",
+      customerName: "Eyup Tekbas",
+      customerPhone: "0548574875842",
+      orderType: OrderType.PICKUP,
+      total: 571,
+      note: null,
+      items: [
+        { productName: "Laxfilé", quantity: 1, unitPrice: 260, totalPrice: 260 },
+        {
+          productName: "Margherita med extra långt produktnamn (Extra ost, Färska räkor)",
+          quantity: 1,
+          unitPrice: 136,
+          totalPrice: 136,
+        },
+        {
+          productName: "Gudfadern (Glutenfri botten) — Skär i åtta bitar",
+          quantity: 1,
+          unitPrice: 175,
+          totalPrice: 175,
+        },
+      ],
+    };
+    const bytes = encodeReceipt({
+      order,
+      restaurant: { name: "Ellstorps Krog" },
+      payment: { methodLabel: "Kort" },
+    });
+    const text = plainEscPosText(bytes);
+    const lines = text.split("\n").filter(Boolean);
+
+    assert.ok(lines.every((line) => line.length <= 42));
+    assert.match(text, /1x Laxfilé\s+260 kr/);
+    assert.match(text, /\n  \+ Extra ost\n/);
+    assert.match(text, /\n  \+ Färska räkor\n/);
+    assert.match(text, /\n  \+ Glutenfri botten\n/);
+    assert.match(text, /Namn: Eyup Tekbas/);
+    assert.match(text, /Tlf nr: 0548574875842/);
+    assert.match(text, /Delsumma\s+571 kr/);
+    assert.match(text, /TOTALT\s+571 kr/);
+    assert.match(text, /Namn: Eyup Tekbas\n\nTlf nr: 0548574875842/);
+    assert.match(text, /Delsumma\s+571 kr\n\nMoms \(12%\)\s+61 kr/);
+    assert.match(text, /Betalning: Kort/);
+    assert.equal(text.includes("BETALNING\nORDER"), false);
+  });
+
+  it("omits payment when persisted payment data is unpaid or pickup-only", () => {
+    const doc = buildReceiptDocument(
+      {
+        ...sampleOrder(),
+        paymentMethod: PaymentMethod.ON_PICKUP,
+        paymentStatus: PaymentStatus.PENDING,
+      },
+      "Ellstorps Krog",
+      { vatRate: 12 }
+    );
+    const text = plainEscPosText(doc.escpos);
+    assert.equal(text.includes("Betalning:"), false);
+    assert.equal(text.includes("Betal vid avhämtning"), false);
+  });
+
+  it("prints the persisted paid online method", () => {
+    const doc = buildReceiptDocument(sampleOrder(), "Ellstorps Krog", {
+      vatRate: 12,
+    });
+    const text = plainEscPosText(doc.escpos);
+    assert.match(text, /Betalning: Swish/);
+  });
+
+  it("calculates VAT-inclusive totals at 6% and 12%", () => {
+    const order = { ...sampleOrder(), total: 423 };
+    const six = plainEscPosText(
+      buildReceiptDocument(order, "Ellstorps Krog", { vatRate: 6 }).escpos
+    );
+    const twelve = plainEscPosText(
+      buildReceiptDocument(order, "Ellstorps Krog", { vatRate: 12 }).escpos
+    );
+
+    assert.match(six, /Moms \(6%\)\s+24 kr/);
+    assert.match(twelve, /Moms \(12%\)\s+45 kr/);
+    assert.match(six, /TOTALT\s+423 kr/);
+    assert.match(twelve, /TOTALT\s+423 kr/);
+  });
+
+  it("reprints the same ready clock time from persisted confirmation", () => {
+    const first = plainEscPosText(
+      buildReceiptDocument(sampleOrder(), "Ellstorps Krog").escpos
+    );
+    const reprint = plainEscPosText(
+      buildReceiptDocument(sampleOrder(), "Ellstorps Krog").escpos
+    );
+    assert.match(first, /Klar: 18:40/);
+    assert.match(reprint, /Klar: 18:40/);
   });
 });
 

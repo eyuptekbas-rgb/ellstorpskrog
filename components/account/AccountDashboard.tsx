@@ -148,14 +148,14 @@ export default function AccountDashboard() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center text-white/50 lg:hidden">
+      <div className="flex min-h-[50vh] items-center justify-center text-white/50">
         Laddar profil…
       </div>
     );
   }
 
   return (
-    <div className="mx-auto w-full max-w-md space-y-5 px-[var(--content-px)] pb-[calc(var(--bottom-nav-height)+var(--bottom-nav-fab-overflow)+env(safe-area-inset-bottom,0px)+1.5rem)] pt-[calc(var(--header-height-mobile)+1.25rem)] lg:hidden">
+    <div className="mx-auto w-full max-w-md space-y-5 px-[var(--content-px)] pb-[calc(var(--bottom-nav-height)+var(--bottom-nav-fab-overflow)+env(safe-area-inset-bottom,0px)+1.5rem)] pt-[calc(var(--header-height-mobile)+1.25rem)]">
       <div className="mb-1">
         <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#b85c38]">
           Profil

@@ -12,6 +12,7 @@ type Props = {
   orderNumber: string;
   total: number;
   cashOrder: boolean;
+  loadingLabel?: string;
 };
 
 export default function SuccessView({
@@ -20,13 +21,14 @@ export default function SuccessView({
   orderNumber,
   total,
   cashOrder,
+  loadingLabel,
 }: Props) {
   const tp = useTenantPublicPath();
 
   if (loading) {
     return (
       <div className="space-y-8">
-        <LoadingSpinner label="Verifierar betalning…" size="lg" />
+        <LoadingSpinner label={loadingLabel || "Verifierar betalning…"} size="lg" />
         <TrustBadges />
       </div>
     );

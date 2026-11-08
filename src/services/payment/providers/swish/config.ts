@@ -1,6 +1,7 @@
 import "server-only";
 
 import { readFileSync } from "node:fs";
+import { createSecureContext } from "node:tls";
 import { prisma } from "@/lib/prisma";
 import { SWISH_API_BASE_URLS } from "@/src/services/payment/providers/swish/constants";
 import { getPaymentEnvironment } from "@/src/services/payment/server/environment";
@@ -14,6 +15,7 @@ export type SwishProviderConfig = {
   key: Buffer;
   ca?: Buffer;
   isLive: boolean;
+  passphrase?: string;
 };
 
 function readOptionalFile(path: string | undefined): Buffer | undefined {
@@ -52,6 +54,7 @@ export function readSwishTlsMaterial() {
       process.env.SWISH_KEY_PATH,
       "Swish private key"
     ),
+    passphrase: process.env.SWISH_KEY_PASSPHRASE,
     ca:
       readOptionalFile(process.env.SWISH_CA_PATH) ??
       (process.env.SWISH_CA_PEM?.trim()
@@ -69,26 +72,44 @@ export async function resolveSwishProviderConfig(
 
   const env = getPaymentEnvironment();
   const merchantNumber =
-    paymentSettings?.swishMerchantNumber?.trim() ??
-    env.swishMerchantNumber?.trim() ??
+    paymentSettings?.swishMerchantNumber?.trim() ||
+    env.swishMerchantNumber?.trim() ||
     null;
 
-  if (!merchantNumber) {
+  if (!paymentSettings?.swishEnabled) {
     return null;
+  }
+  if (!merchantNumber || !/^123\d{7}$/.test(merchantNumber)) {
+    throw new Error("Swish merchant alias is missing or invalid for this tenant");
   }
 
   let tls: ReturnType<typeof readSwishTlsMaterial>;
 
   try {
     tls = readSwishTlsMaterial();
-  } catch {
-    return null;
+    createSecureContext({ ...tls, minVersion: "TLSv1.2" });
+    console.info("[Swish] mTLS material loaded", {
+      certificateLoaded: tls.cert.length > 0,
+      privateKeyLoaded: tls.key.length > 0,
+    });
+  } catch (error) {
+    throw new Error(
+      `Swish mTLS credentials are invalid: ${error instanceof Error ? error.message : String(error)}`
+    );
   }
 
   const isLive = paymentSettings?.isLive ?? false;
   const apiBaseUrl =
-    process.env.SWISH_API_BASE_URL?.trim() ??
+    process.env.SWISH_API_BASE_URL?.trim() ||
     (isLive ? SWISH_API_BASE_URLS.live : SWISH_API_BASE_URLS.test);
+  // Never send merchant TLS material to an arbitrary override host.
+  if (apiBaseUrl !== (isLive ? SWISH_API_BASE_URLS.live : SWISH_API_BASE_URLS.test)) {
+    throw new Error("SWISH_API_BASE_URL does not match the tenant Swish environment");
+  }
+  if ((process.env.SWISH_CALLBACK_SECRET?.trim().length ?? 0) < 32) {
+    throw new Error("SWISH_CALLBACK_SECRET must contain at least 32 characters");
+  }
+  getSwishAppUrl();
 
   return {
     merchantNumber,
@@ -97,7 +118,17 @@ export async function resolveSwishProviderConfig(
     key: tls.key,
     ca: tls.ca,
     isLive,
+    passphrase: tls.passphrase,
   };
+}
+
+export function getSwishAppUrl(): string {
+  const url = new URL(process.env.SWISH_APP_URL?.trim() || process.env.NEXT_PUBLIC_APP_URL?.trim() || "");
+  if (url.protocol !== "https:" || url.username || url.password ||
+      ["localhost", "127.0.0.1", "::1"].includes(url.hostname)) {
+    throw new Error("Swish requires a public HTTPS application URL");
+  }
+  return url.origin;
 }
 
 export function isSwishConfigured(config: SwishProviderConfig | null): boolean {

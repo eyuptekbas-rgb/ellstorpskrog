@@ -22,7 +22,7 @@ export default async function Home() {
       <JsonLd data={schema} />
       <HomeClient
         restaurantName={settings.restaurantName}
-        heroImage={settings.heroImage ?? "/hero.jpg"}
+        heroImage="/images/Ellstorps-Krog.png"
         phone={settings.phone}
         phoneLink={phoneHref(settings.phone)}
         isOpen={isOpen}

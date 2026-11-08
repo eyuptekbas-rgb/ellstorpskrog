@@ -50,17 +50,20 @@ export default auth((req) => {
   }
 
   const isCustomer = isLoggedIn && req.auth?.user?.role === "CUSTOMER";
+  // Auth.js can replace nextUrl's origin with AUTH_URL. Customer navigation
+  // must stay on the host the customer is actually visiting.
+  const customerOrigin = `${nextUrl.protocol}//${req.headers.get("host") || nextUrl.host}`;
 
   if (pathname === "/konto/logga-in" || pathname === "/konto/registrera") {
     if (isCustomer) {
-      return NextResponse.redirect(new URL("/konto", nextUrl));
+      return NextResponse.redirect(new URL("/konto", customerOrigin));
     }
     return NextResponse.next();
   }
 
   if (pathname === "/konto") {
     if (!isCustomer) {
-      return NextResponse.redirect(new URL("/konto/logga-in", nextUrl));
+      return NextResponse.redirect(new URL("/konto/logga-in", customerOrigin));
     }
     return NextResponse.next();
   }

@@ -17,7 +17,7 @@ export function isValidWaitTimeMinutes(
 
 export async function sendCustomerWaitTime(
   payload: CustomerWaitTimePayload
-): Promise<void> {
+): Promise<{ confirmedAt: string | null }> {
   const res = await fetch(`/api/orders/${payload.orderId}/wait-time`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
@@ -28,4 +28,7 @@ export async function sendCustomerWaitTime(
     const body = (await res.json().catch(() => null)) as { error?: string } | null;
     throw new Error(body?.error ?? `HTTP ${res.status}`);
   }
+
+  const body = (await res.json()) as { confirmedAt?: string | null };
+  return { confirmedAt: body.confirmedAt ?? null };
 }

@@ -10,13 +10,14 @@ export function orderTotalToSwishAmount(total: number): PaymentAmount {
   return new Decimal(total).toFixed(2);
 }
 
-export function parseSwishAmount(value: string): PaymentAmount {
+export function parseSwishAmount(value: string | number): PaymentAmount {
   return new Decimal(value).toFixed(2);
 }
 
 export function swishAmountsMatch(
   expected: PaymentAmount,
-  received: string
+  received: string | number
 ): boolean {
-  return toSwishAmount(expected) === parseSwishAmount(received);
+  if (!/^\d+(?:\.\d{1,2})?$/.test(String(received))) return false;
+  return new Decimal(expected).equals(new Decimal(received));
 }

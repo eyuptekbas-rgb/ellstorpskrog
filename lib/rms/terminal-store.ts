@@ -1,88 +1,75 @@
+import { prisma } from "@/lib/prisma";
+
 export type TerminalDeviceKind = "pos" | "kitchen" | "customer-display" | "delivery";
+export type TerminalPrinterStatus = "ok" | "degraded" | "error" | "unknown";
 
 export type TerminalRecord = {
-  id: string;
-  tenantId: string;
-  name: string;
-  location: string;
-  kitchen: string;
-  lastSeen: string;
-  online: boolean;
-  deviceKind?: TerminalDeviceKind;
-  printerStatus?: "ok" | "degraded" | "error" | "unknown";
-  printQueueLength?: number;
-  offlineQueueLength?: number;
-  appVersion?: string;
+  id: string; tenantId: string; name: string; location: string; kitchen: string;
+  lastSeen: string; online: boolean; deviceKind?: TerminalDeviceKind;
+  printerStatus?: TerminalPrinterStatus; printQueueLength?: number;
+  offlineQueueLength?: number; appVersion?: string;
 };
 
-type TerminalInput = {
-  id: string;
-  name: string;
-  location: string;
-  kitchen: string;
-  deviceKind?: TerminalDeviceKind;
-  printerStatus?: TerminalRecord["printerStatus"];
-  printQueueLength?: number;
-  offlineQueueLength?: number;
-  appVersion?: string;
-};
-
+type TerminalInput = Omit<TerminalRecord, "tenantId" | "lastSeen" | "online">;
 const ONLINE_THRESHOLD_MS = 45_000;
-const store = new Map<string, TerminalRecord>();
 
-function key(tenantId: string, terminalId: string) {
-  return `${tenantId}:${terminalId}`;
+function toTerminalRecord(row: {
+  id: string; tenantId: string; name: string; location: string; kitchen: string;
+  lastSeen: Date; deviceKind: string; printerStatus: string; printQueueLength: number;
+  offlineQueueLength: number; appVersion: string | null;
+}): TerminalRecord {
+  return {
+    ...row,
+    lastSeen: row.lastSeen.toISOString(),
+    online: Date.now() - row.lastSeen.getTime() <= ONLINE_THRESHOLD_MS,
+    deviceKind: row.deviceKind as TerminalDeviceKind,
+    printerStatus: row.printerStatus as TerminalPrinterStatus,
+    appVersion: row.appVersion ?? undefined,
+  };
 }
 
-export function upsertTerminalHeartbeat(
+export async function upsertTerminalHeartbeat(
   tenantId: string,
   input: TerminalInput
-): TerminalRecord {
-  const now = new Date().toISOString();
-  const existing = store.get(key(tenantId, input.id));
-  const record: TerminalRecord = {
-    id: input.id,
-    tenantId,
-    name: input.name.trim() || "Terminal",
-    location: input.location.trim() || "—",
-    kitchen: input.kitchen.trim() || "—",
-    lastSeen: now,
-    online: true,
-    deviceKind: input.deviceKind ?? existing?.deviceKind ?? "pos",
-    printerStatus: input.printerStatus ?? existing?.printerStatus ?? "unknown",
-    printQueueLength: input.printQueueLength ?? existing?.printQueueLength ?? 0,
-    offlineQueueLength: input.offlineQueueLength ?? existing?.offlineQueueLength ?? 0,
-    appVersion: input.appVersion ?? existing?.appVersion,
-  };
-  store.set(key(tenantId, input.id), record);
-  return record;
-}
-
-function withOnlineState(record: TerminalRecord): TerminalRecord {
-  const age = Date.now() - new Date(record.lastSeen).getTime();
-  return { ...record, online: age <= ONLINE_THRESHOLD_MS };
-}
-
-export function listTerminals(tenantId: string): TerminalRecord[] {
-  const rows: TerminalRecord[] = [];
-  for (const record of store.values()) {
-    if (record.tenantId === tenantId) {
-      rows.push(withOnlineState(record));
-    }
+): Promise<TerminalRecord> {
+  const existing = await prisma.rmsTerminal.findUnique({ where: { id: input.id } });
+  if (existing && existing.tenantId !== tenantId) {
+    throw new Error("Terminal id belongs to another tenant");
   }
-  return rows.sort(
-    (a, b) => new Date(b.lastSeen).getTime() - new Date(a.lastSeen).getTime()
-  );
+  const row = await prisma.rmsTerminal.upsert({
+    where: { id: input.id },
+    create: {
+      id: input.id, tenantId, name: input.name.trim() || "Terminal",
+      location: input.location.trim() || "—", kitchen: input.kitchen.trim() || "—",
+      deviceKind: input.deviceKind ?? "pos", printerStatus: input.printerStatus ?? "unknown",
+      printQueueLength: input.printQueueLength ?? 0,
+      offlineQueueLength: input.offlineQueueLength ?? 0, appVersion: input.appVersion,
+    },
+    update: {
+      name: input.name.trim() || "Terminal", location: input.location.trim() || "—",
+      kitchen: input.kitchen.trim() || "—", deviceKind: input.deviceKind,
+      printerStatus: input.printerStatus, printQueueLength: input.printQueueLength,
+      offlineQueueLength: input.offlineQueueLength, appVersion: input.appVersion,
+      lastSeen: new Date(),
+    },
+  });
+  return toTerminalRecord(row);
 }
 
-export function getTerminal(
-  tenantId: string,
-  terminalId: string
-): TerminalRecord | null {
-  const record = store.get(key(tenantId, terminalId));
-  return record ? withOnlineState(record) : null;
+export async function listTerminals(tenantId: string): Promise<TerminalRecord[]> {
+  const rows = await prisma.rmsTerminal.findMany({
+    where: { tenantId }, orderBy: { lastSeen: "desc" },
+  });
+  return rows.map(toTerminalRecord);
 }
 
-export function countOnlineTerminals(tenantId: string): number {
-  return listTerminals(tenantId).filter((t) => t.online).length;
+export async function getTerminal(tenantId: string, terminalId: string): Promise<TerminalRecord | null> {
+  const row = await prisma.rmsTerminal.findFirst({ where: { id: terminalId, tenantId } });
+  return row ? toTerminalRecord(row) : null;
+}
+
+export async function countOnlineTerminals(tenantId: string): Promise<number> {
+  return prisma.rmsTerminal.count({
+    where: { tenantId, lastSeen: { gte: new Date(Date.now() - ONLINE_THRESHOLD_MS) } },
+  });
 }

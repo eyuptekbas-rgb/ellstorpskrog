@@ -1,0 +1,155 @@
+.container {
+  position: relative;
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 32px var(--content-px) 48px;
+}
+
+.top {
+  display: grid;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.intro p:last-child {
+  margin-left: 0;
+}
+
+.actions > div {
+  grid-template-columns: 1fr;
+  margin-bottom: 0;
+  gap: 10px;
+}
+
+.actions a {
+  min-height: 50px;
+}
+
+.composition {
+  display: grid;
+  gap: 28px;
+  border-top: 1px solid rgb(255 255 255 / 8%);
+  padding-top: 28px;
+}
+
+.info {
+  align-self: start;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 22px;
+  background: rgb(255 255 255 / 3%);
+}
+
+.container .info > div,
+.container .form > div {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.container .info > div + div {
+  border-top: 1px solid rgb(255 255 255 / 8%);
+}
+
+.info > div {
+  padding: 22px;
+}
+
+.info a,
+.info p {
+  overflow-wrap: anywhere;
+}
+
+.right {
+  min-width: 0;
+  display: grid;
+  gap: 28px;
+}
+
+.right iframe {
+  display: block;
+  width: 100%;
+  height: 260px;
+  aspect-ratio: auto;
+}
+
+.form {
+  border-top: 1px solid rgb(255 255 255 / 8%);
+  padding-top: 24px;
+}
+
+.form > div {
+  padding: 0;
+}
+
+.form textarea {
+  min-height: 112px;
+  resize: vertical;
+}
+
+.form input,
+.form textarea {
+  font-size: 16px;
+}
+
+.form input::placeholder,
+.form textarea::placeholder {
+  color: rgb(255 255 255 / 55%);
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding-top: 40px;
+    padding-bottom: 64px;
+  }
+
+  .top {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 32px;
+  }
+
+  .actions > div {
+    min-width: 220px;
+  }
+
+  .composition {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: 32px;
+  }
+
+  .right iframe {
+    height: 300px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .actions > div {
+    grid-template-columns: repeat(2, auto);
+  }
+
+  .composition {
+    gap: 48px;
+  }
+
+  .info > div {
+    padding: 24px;
+  }
+
+  .form form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .form form > * {
+    margin: 0;
+  }
+
+  .form textarea,
+  .form button {
+    grid-column: 1 / -1;
+  }
+}

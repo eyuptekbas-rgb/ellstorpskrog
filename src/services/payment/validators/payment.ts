@@ -4,6 +4,9 @@ import { isValidPaymentAmount } from "@/src/services/payment/types/decimal";
 import { PAYMENT_METHODS, PAYMENT_STATUSES } from "@/src/services/payment/types";
 
 const cuidSchema = z.string().cuid();
+// Tenant IDs include seeded identifiers such as tenant_ellstorps_krog.
+// Ownership is checked against the resolved tenant in the payment service.
+const businessIdSchema = z.string().min(1).max(191).regex(/^[A-Za-z0-9_-]+$/);
 
 const currencySchema = z
   .string()
@@ -21,8 +24,9 @@ const amountSchema = z
   );
 
 export const createPaymentSchema = z.object({
+  swishPayerPhone: z.string().trim().max(40).optional(),
   orderId: cuidSchema,
-  businessId: cuidSchema,
+  businessId: businessIdSchema,
   method: z.enum(PAYMENT_METHODS),
   amount: amountSchema,
   currency: currencySchema,
@@ -30,7 +34,7 @@ export const createPaymentSchema = z.object({
 });
 
 export const updatePaymentSchema = z.object({
-  businessId: cuidSchema,
+  businessId: businessIdSchema,
   paymentId: cuidSchema,
   status: z.enum(PAYMENT_STATUSES).optional(),
   providerPaymentId: z.string().trim().min(1).max(255).nullable().optional(),
@@ -39,7 +43,7 @@ export const updatePaymentSchema = z.object({
 });
 
 export const listPaymentsSchema = z.object({
-  businessId: cuidSchema,
+  businessId: businessIdSchema,
   orderId: cuidSchema.optional(),
   status: z.enum(PAYMENT_STATUSES).optional(),
   method: z.enum(PAYMENT_METHODS).optional(),
@@ -48,7 +52,7 @@ export const listPaymentsSchema = z.object({
 });
 
 export const paymentOperationSchema = z.object({
-  businessId: cuidSchema,
+  businessId: businessIdSchema,
   paymentId: cuidSchema,
 });
 

@@ -1,11 +1,11 @@
 # Standalone Windows printer diagnosis + RAW ESC/POS test
 # Usage:
 #   .\diagnose-printers.ps1
-#   .\diagnose-printers.ps1 -TargetPrinter "Ellstorps Krog Printer"
-#   .\diagnose-printers.ps1 -TargetPrinter "Ellstorps Krog Printer" -SendTest
+#   .\diagnose-printers.ps1 -TargetPrinter "Ellstorpskrog Print"
+#   .\diagnose-printers.ps1 -TargetPrinter "Ellstorpskrog Print" -SendTest
 
 param(
-  [string]$TargetPrinter = "Ellstorps Krog Printer",
+  [string]$TargetPrinter = "Ellstorpskrog Print",
   [switch]$SendTest
 )
 

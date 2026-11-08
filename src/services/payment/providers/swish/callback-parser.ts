@@ -19,7 +19,7 @@ export type SwishCallbackPayload = {
   callbackUrl?: string;
   payerAlias?: string;
   payeeAlias?: string;
-  amount?: string;
+  amount?: string | number;
   currency?: string;
   message?: string;
   status?: SwishCallbackStatus;

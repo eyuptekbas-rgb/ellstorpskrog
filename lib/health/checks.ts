@@ -78,7 +78,12 @@ export async function runHealthChecks(): Promise<HealthCheckResult> {
   let database: HealthCheckResult["database"] = { status: "ok" };
 
   try {
-    await prisma.$queryRaw`SELECT 1`;
+    await Promise.race([
+      prisma.$queryRaw`SELECT 1`,
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Database health check timed out")), 5_000)
+      ),
+    ]);
   } catch (error) {
     database = {
       status: "error",

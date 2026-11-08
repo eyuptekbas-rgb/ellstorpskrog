@@ -3,6 +3,10 @@ import { safeWriteOperationalAudit } from "@/lib/audit/audit-log";
 import { notifyOrderStatusChanged } from "@/lib/email/notify";
 import { publishOrderUpdated } from "@/lib/realtime/publish";
 import { prisma } from "@/lib/prisma";
+import {
+  assertValidOrderStatusTransition,
+  InvalidOrderStatusTransitionError,
+} from "@/lib/orders/status-transitions";
 
 export type UpdateOrderStatusOptions = {
   actorUserId?: string;
@@ -37,11 +41,21 @@ export async function updateOrderStatus(
     return { order, previousStatus: existing.status };
   }
 
+  assertValidOrderStatusTransition(existing.status, status, existing.orderType);
+
   const order = await prisma.$transaction(async (tx) => {
-    await tx.order.update({
-      where: { id: orderId },
+    const updated = await tx.order.updateMany({
+      where: { id: orderId, tenantId, status: existing.status },
       data: { status },
     });
+
+    if (updated.count !== 1) {
+      throw new InvalidOrderStatusTransitionError(
+        existing.status,
+        status,
+        existing.orderType
+      );
+    }
 
     await tx.orderStatusHistory.create({
       data: { orderId, status },

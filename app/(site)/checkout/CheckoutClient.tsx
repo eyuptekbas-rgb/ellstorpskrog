@@ -18,6 +18,7 @@ import TrustBadges from "@/components/checkout/TrustBadges";
 import { CartItem, formatOrderItemName, loadCart, loadOrderNote, saveOrderNote } from "@/lib/cart";
 import { extractPostalCode, matchDeliveryZone } from "@/lib/settings/utils";
 import type { DeliveryZone, SiteSettings } from "@prisma/client";
+import { normalizeSwishPhone } from "@/src/services/payment/providers/swish/phone";
 
 const FORM_ID = "checkout-form";
 
@@ -35,10 +36,12 @@ export default function CheckoutClient() {
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [deliveryZones, setDeliveryZones] = useState<DeliveryZone[]>([]);
   const [stripeCardEnabled, setStripeCardEnabled] = useState(false);
+  const [swishEnabled, setSwishEnabled] = useState(false);
   const [stripeTestMode, setStripeTestMode] = useState(true);
   const [settingsLoading, setSettingsLoading] = useState(true);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [swishPhone, setSwishPhone] = useState("");
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
   const [orderType, setOrderType] = useState<OrderType>("afhentning");
@@ -128,14 +131,21 @@ export default function CheckoutClient() {
   }, []);
 
   useEffect(() => {
+    fetch("/api/checkout/swish").then(res => res.ok ? res.json() : null)
+      .then(data => setSwishEnabled(data?.enabled === true)).catch(() => {});
+  }, []);
+
+  useEffect(() => {
     if (orderType === "levering") {
+      if (paymentMethod === "swish" && swishEnabled) return;
       if (stripeCardEnabled) setPaymentMethod("kort");
+      else if (swishEnabled) setPaymentMethod("swish");
       return;
     }
     if (paymentMethod === "kort" && !stripeCardEnabled) {
       setPaymentMethod("afhentning");
     }
-  }, [orderType, paymentMethod, stripeCardEnabled]);
+  }, [orderType, paymentMethod, stripeCardEnabled, swishEnabled]);
 
   const subtotal = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -158,12 +168,7 @@ export default function CheckoutClient() {
 
   const deliveryFee =
     orderType === "levering" ? deliveryMatch.deliveryFee : 0;
-  const minimumOrder =
-    orderType === "levering"
-      ? deliveryMatch.minimumOrder
-      : settings?.minimumOrder ?? 0;
   const totalPrice = subtotal + deliveryFee;
-  const belowMinimum = minimumOrder > 0 && subtotal < minimumOrder;
 
   const pickupEnabled = settings?.pickupEnabled ?? true;
   const deliveryEnabled = settings?.deliveryEnabled ?? true;
@@ -186,10 +191,15 @@ export default function CheckoutClient() {
     setLoading(true);
     setError("");
 
-    if (minimumOrder > 0 && subtotal < minimumOrder) {
-      setError(`Minsta order är ${minimumOrder} kr (exkl. leveransavgift).`);
-      setLoading(false);
-      return;
+    let swishPayerPhone: string | undefined;
+    if (paymentMethod === "swish") {
+      try {
+        swishPayerPhone = normalizeSwishPhone(swishPhone);
+      } catch {
+        setError("Ange ett svenskt mobilnummer kopplat till Swish, till exempel 0701234567.");
+        setLoading(false);
+        return;
+      }
     }
 
     if (orderType === "levering" && deliveryZones.length > 0 && !deliveryAvailable) {
@@ -218,15 +228,15 @@ export default function CheckoutClient() {
     };
 
     try {
-      if (paymentMethod === "kort") {
-        if (!stripeCardEnabled) {
+      if (paymentMethod === "kort" || paymentMethod === "swish") {
+        if (paymentMethod === "swish" ? !swishEnabled : !stripeCardEnabled) {
           throw new Error("Online payment not available");
         }
 
         const res = await fetch("/api/payments/create", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+          body: JSON.stringify({ ...payload, ...(paymentMethod === "swish" && { paymentMethod: "SWISH", swishPayerPhone }) }),
         });
 
         if (!res.ok) {
@@ -275,7 +285,7 @@ export default function CheckoutClient() {
     }
   };
 
-  const deliveryNeedsOnline = orderType === "levering" && !stripeCardEnabled;
+  const deliveryNeedsOnline = orderType === "levering" && !stripeCardEnabled && !swishEnabled;
   const pickupPaymentUnavailable =
     orderType === "afhentning" && !stripeCardEnabled && paymentMethod === "kort";
 
@@ -284,16 +294,13 @@ export default function CheckoutClient() {
     deliveryNeedsOnline ||
     pickupPaymentUnavailable ||
     (!pickupEnabled && !deliveryEnabled) ||
-    belowMinimum ||
     (orderType === "levering" && deliveryZones.length > 0 && !deliveryAvailable);
 
   const disabledReason = deliveryNeedsOnline
     ? "Leverans kräver onlinebetalning som inte är aktiverad just nu."
     : !pickupEnabled && !deliveryEnabled
     ? "Avhämtning och leverans är inte tillgängligt just nu."
-    : belowMinimum
-      ? `Minsta order är ${minimumOrder} kr — du har ${subtotal} kr.`
-      : null;
+    : null;
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white pb-44">
@@ -394,8 +401,6 @@ export default function CheckoutClient() {
                 totalPrice={totalPrice}
                 orderType={orderType}
                 zoneName={deliveryMatch.zone?.name ?? null}
-                minimumOrder={minimumOrder}
-                belowMinimum={belowMinimum}
               />
 
               <section className="card-premium rounded-[var(--radius-card)] p-6 space-y-5">
@@ -484,10 +489,28 @@ export default function CheckoutClient() {
               <div className="card-premium rounded-[var(--radius-card)] p-5">
                 <PaymentMethodSelector
                   paymentMethod={paymentMethod}
+                  swishEnabled={swishEnabled}
                   orderType={orderType}
                   stripeCardEnabled={stripeCardEnabled}
                   onChange={setPaymentMethod}
                 />
+                {paymentMethod === "swish" && (
+                  <div className="mt-5">
+                    <FormInput
+                      id="swish-phone"
+                      label="Mobilnummer för Swish"
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="off"
+                      placeholder="0701234567"
+                      value={swishPhone}
+                      onChange={(e) => setSwishPhone(e.target.value)}
+                      required
+                      maxLength={40}
+                      hint="Ange numret som är kopplat till din Swish-app. Godkänn sedan betalningen i appen."
+                    />
+                  </div>
+                )}
               </div>
 
               <section className="card-premium rounded-[var(--radius-card)] p-5">
